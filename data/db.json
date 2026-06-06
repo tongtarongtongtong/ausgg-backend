@@ -1,0 +1,71 @@
+{
+  "users": [
+    {
+      "id": "8a83ad74-bdde-4272-a9c1-f0b948bebbad",
+      "playerId": "CUR0XU1B",
+      "username": "dwfwfwf",
+      "email": "tonge4046@gmail.com",
+      "password": "$2a$10$x805r2/d1IAdTZOjwiE/XOetUSLFyd9.cmu6Mk0TMgzfBpamqzRPS",
+      "balance": 1012,
+      "emailVerified": true,
+      "banned": false,
+      "totalDeposited": 0,
+      "totalWithdrawn": 0,
+      "totalBets": 1,
+      "totalWon": 22,
+      "totalLost": 0,
+      "firstName": "fwfw",
+      "lastName": "wfwf",
+      "phone": "+61428583091",
+      "bankInfo": {
+        "bankName": "ewgfewf",
+        "accountNumber": "282984",
+        "bsb": "062483",
+        "accountHolder": "fwjbjfwfkfwfwf"
+      },
+      "notes": "",
+      "createdAt": "2026-06-06T17:21:02.298Z",
+      "lastLogin": "2026-06-06T17:21:02.298Z"
+    }
+  ],
+  "pendingUsers": [],
+  "transactions": [],
+  "bets": [
+    {
+      "id": "BET-B86F9156",
+      "userId": "8a83ad74-bdde-4272-a9c1-f0b948bebbad",
+      "playerId": "CUR0XU1B",
+      "username": "dwfwfwf",
+      "game": "Dice",
+      "betAmount": 10,
+      "win": true,
+      "payout": 22,
+      "profit": 12,
+      "detail": "<46",
+      "createdAt": "2026-06-06T17:21:19.826Z"
+    }
+  ],
+  "chats": [],
+  "bonuses": [],
+  "promoCodes": [],
+  "announcements": [],
+  "notifications": [],
+  "gameConfig": {},
+  "siteConfig": {
+    "accentColor": "#3b82f6",
+    "bgColor": "#0a0f1e",
+    "bg2Color": "#0f172a",
+    "banner": {}
+  },
+  "depositInstructions": {},
+  "depositRequests": [],
+  "withdrawalRequests": [],
+  "withdrawalFormFields": [],
+  "games": [],
+  "gameCategories": [
+    "Casino",
+    "Slots",
+    "Sports",
+    "Quickgame"
+  ]
+}

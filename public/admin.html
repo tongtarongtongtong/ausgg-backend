@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AUSGG Admin v4</title>
+<style>
+:root{--bg:#0a0f1a;--bg2:#111827;--bg3:#1a2336;--bg4:#243047;--accent:#6366f1;--a2:#818cf8;--green:#22c55e;--red:#ef4444;--gold:#f59e0b;--blue:#3b82f6;--purple:#a855f7;--text:#e2e8f0;--muted:#64748b;--border:rgba(255,255,255,0.08);--r:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:40px;width:360px;text-align:center}
+.login-box h1{font-size:22px;font-weight:700;color:var(--a2);margin-bottom:4px}
+.login-box p{color:var(--muted);font-size:13px;margin-bottom:24px}
+.lf{margin-bottom:12px;text-align:left}
+.lf label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}
+.lf input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:10px 12px;font-size:14px;outline:none}
+.lf input:focus{border-color:var(--accent)}
+.login-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer}
+.login-btn:hover{background:var(--a2)}
+.err{color:var(--red);font-size:12px;margin-top:8px;display:none}
+.app{display:none;flex-direction:column;min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:54px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.logo{font-size:16px;font-weight:700;color:var(--a2);display:flex;align-items:center;gap:8px}
+.logo span{background:var(--red);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px}
+.tr{display:flex;align-items:center;gap:10px}
+.badge-online{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);background:rgba(34,197,94,0.1);padding:4px 10px;border-radius:20px;border:1px solid rgba(34,197,94,0.2)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{padding:6px 14px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.bg{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.bg:hover{background:var(--bg4)}
+.bp{background:var(--accent);color:#fff}
+.bp:hover{background:var(--a2)}
+.bs{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.bd{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.bgold{background:rgba(245,158,11,.15);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
+.bpur{background:rgba(168,85,247,.15);color:var(--purple);border:1px solid rgba(168,85,247,.3)}
+.body{display:flex;flex:1}
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);padding:10px 0;flex-shrink:0;overflow-y:auto;max-height:calc(100vh - 54px)}
+.ns{margin-bottom:14px}
+.nl{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;padding:0 14px 5px;text-transform:uppercase}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 14px;font-size:12px;color:var(--muted);cursor:pointer;border-left:3px solid transparent;transition:all .12s}
+.ni:hover,.ni.active{background:var(--bg3);color:var(--text);border-left-color:var(--accent)}
+.ni .ic{font-size:14px;width:18px;text-align:center}
+.nb{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:16px;text-align:center}
+.nb.g{background:var(--green)}
+.nb.gold{background:var(--gold);color:#000}
+.nb.pur{background:var(--purple)}
+.content{flex:1;padding:18px;overflow-y:auto;max-height:calc(100vh - 54px)}
+.tab{display:none}
+.tab.active{display:block}
+.pt{font-size:18px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.pt .sub{font-size:11px;font-weight:400;color:var(--muted)}
+.sg{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px}
+.sl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.sv{font-size:20px;font-weight:700}
+.tw{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.th{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px}
+.th h3{font-size:13px;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:7px 16px;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border)}
+td{padding:9px 16px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.02)}
+tr:last-child td{border-bottom:none}
+.er{text-align:center;padding:24px;color:var(--muted);font-size:12px}
+.st{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.st.pending{background:rgba(245,158,11,.1);color:var(--gold)}
+.st.approved,.st.completed,.st.active{background:rgba(34,197,94,.1);color:var(--green)}
+.st.rejected,.st.banned{background:rgba(239,68,68,.1);color:var(--red)}
+.st.process{background:rgba(59,130,246,.1);color:var(--blue)}
+.st.verified{background:rgba(99,102,241,.1);color:var(--a2)}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
+.panel h3{font-size:13px;font-weight:700;margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.f{margin-bottom:10px}
+.f label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+.f input,.f select,.f textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 11px;font-size:12px;outline:none;font-family:inherit;transition:border-color .15s}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--accent)}
+.f textarea{resize:vertical;min-height:70px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.rw{display:flex;align-items:center;gap:8px}
+.rng{flex:1;accent-color:var(--accent)}
+.rv{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:12px;font-weight:700;min-width:50px;text-align:center;color:var(--a2)}
+.tw2{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+.tw2:last-child{border-bottom:none}
+.tl{font-size:12px;font-weight:500}
+.ts{color:var(--muted);font-size:10px;margin-top:2px}
+.tog{position:relative;width:40px;height:22px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.togs{position:absolute;inset:0;background:var(--bg4);border-radius:22px;cursor:pointer;transition:.3s}
+.togs:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s}
+input:checked+.togs{background:var(--accent)}
+input:checked+.togs:before{transform:translateX(18px)}
+#notif{position:fixed;top:62px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+.ni2{padding:9px 14px;border-radius:8px;font-size:12px;font-weight:600;animation:si .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+@keyframes si{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+.ns2{background:#0f2e1a;border:1px solid var(--green);color:var(--green)}
+.ne{background:#2e0f0f;border:1px solid var(--red);color:var(--red)}
+.ni3{background:#0f1a2e;border:1px solid var(--blue);color:var(--blue)}
+.ng{background:#2e200f;border:1px solid var(--gold);color:var(--gold)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.av{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:11px;font-weight:700;flex-shrink:0}
+.rc{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.img-preview{width:60px;height:60px;border-radius:8px;object-fit:cover;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:30px;border:1px solid var(--border)}
+.game-card-admin{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px}
+.receipt-img{max-width:100%;max-height:300px;border-radius:8px;margin-top:8px;border:1px solid var(--border)}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:5000;align-items:center;justify-content:center}
+.modal.show{display:flex}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:28px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;position:relative}
+.modal-box h3{font-size:16px;font-weight:700;margin-bottom:16px}
+.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+.tabs-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);transition:all .12s}
+.tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="login-screen" id="ls">
+  <div class="login-box">
+    <div style="font-size:36px;margin-bottom:8px">🎰</div>
+    <h1>AUSGG Admin v4</h1>
+    <p>Authorized access only</p>
+    <div class="lf"><label>Admin Key</label><input type="password" id="ak" placeholder="Enter admin key" onkeydown="if(event.key==='Enter')login()"></div>
+    <button class="login-btn" onclick="login()">🔐 Enter Dashboard</button>
+    <div class="err" id="lerr">❌ Wrong key</div>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="logo">🎰 AUSGG <span>ADMIN v4</span></div>
+    <div class="tr">
+      <div class="badge-online"><div class="dot"></div> Live</div>
+      <div class="rc">🔄 <span id="rc">10</span>s</div>
+      <button class="btn bg" onclick="refreshAll()" style="font-size:11px">Refresh</button>
+      <button class="btn bd" onclick="doLogout()" style="font-size:11px">Logout</button>
+    </div>
+  </div>
+  <div class="body">
+    <div class="sidebar">
+      <div class="ns">
+        <div class="nl">Overview</div>
+        <div class="ni active" onclick="st('dashboard',this)"><span class="ic">📊</span> Dashboard</div>
+        <div class="ni" onclick="st('livefeed',this)"><span class="ic">📡</span> Live Feed</div>
+      </div>
+      <div class="ns">
+        <div class="nl">Users</div>
+        <div class="ni" onclick="st('users',this)"><span class="ic">👥</span> All Users <span class="nb g" id="ub">0</span></div>
+        <div class="ni" onclick="st('pendingreg',this)"><span class="ic">⏳</span> Pending Reg <span class="nb gold" id="prb">0</span></div>
+      </div>
+      <div class="ns">
+        <div class="nl">Requests</div>
+        <div class="ni" onclick="st('requests',this)"><span class="ic">📥</span> All Requests <span class="nb" id="reqb">0</span></div>
+        <div class="ni" onclick="st('deposits',this)"><span class="ic">⬇️</span> Deposits</div>
+        <div class="ni" onclick="st('withdrawals',this)"><span class="ic">⬆️</span> Withdrawals <span class="nb" id="wdb">0</span></div>
+        <div class="ni" onclick="st('bets',this)"><span class="ic">🎲</span> All Bets</div>
+      </div>
+      <div class="ns">
+        <div class="nl">Bonuses</div>
+        <div class="ni" onclick="st('bonuses',this)"><span class="ic">🎁</span> Give Bonus</div>
+        <div class="ni" onclick="st('promos',this)"><span class="ic">🎟️</span> Promo Codes</div>
+      </div>
+      <div class="ns">
+        <div class="nl">Support</div>
+        <div class="ni" onclick="st('chat',this)"><span class="ic">💬</span> Live Chat <span class="nb" id="chatb">0</span></div>
+        <div class="ni" onclick="st('announcements',this)"><span class="ic">📢</span> Announcements</div>
+      </div>
+      <div class="ns">
+        <div class="nl">Site Controls</div>
+        <div class="ni" onclick="st('gameconfig',this)"><span class="ic">⚙️</span> Game Config</div>
+        <div class="ni" onclick="st('gamemanager',this)"><span class="ic">🎮</span> Game Manager</div>
+        <div class="ni" onclick="st('siteeditor',this)"><span class="ic">🎨</span> Site Editor</div>
+        <div class="ni" onclick="st('depositsetup',this)"><span class="ic">📋</span> Deposit Setup</div>
+        <div class="ni" onclick="st('wdform',this)"><span class="ic">📝</span> Withdrawal Form</div>
+        <div class="ni" onclick="st('promotionseditor',this)"><span class="ic">🎁</span> Promotions</div>
+        <div class="ni" onclick="st('abouteditor',this)"><span class="ic">ℹ️</span> About Us</div>
+        <div class="ni" onclick="st('themes',this)"><span class="ic">🖌️</span> Themes</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="tab active" id="tab-dashboard">
+        <div class="pt">📊 Dashboard <span class="sub">Auto-refreshes every 10s</span></div>
+        <div class="sg">
+          <div class="sc"><div class="sl">Users</div><div class="sv" id="d-users" style="color:var(--a2)">—</div></div>
+          <div class="sc"><div class="sl">Pending Requests</div><div class="sv" id="d-reqs" style="color:var(--gold)">—</div></div>
+          <div class="sc"><div class="sl">Total Bets</div><div class="sv" id="d-bets" style="color:var(--blue)">—</div></div>
+          <div class="sc"><div class="sl">Total Wagered</div><div class="sv" id="d-wag" style="color:var(--purple)">—</div></div>
+          <div class="sc"><div class="sl">Pending WD</div><div class="sv" id="d-wd" style="color:var(--red)">—</div></div>
+        </div>
+        <div class="g2">
+          <div class="tw"><div class="th"><h3>Recent Registrations</h3></div><div id="dash-reg"></div></div>
+          <div class="tw"><div class="th"><h3>Recent Requests</h3></div><div id="dash-req"></div></div>
+        </div>
+      </div>
+
+      <!-- LIVE FEED -->
+      <div class="tab" id="tab-livefeed">
+        <div class="pt">📡 Live Registration Feed</div>
+        <div class="g2">
+          <div>
+            <div class="panel" style="padding:0;overflow:hidden">
+              <div class="th"><h3>🟢 Activity</h3></div>
+              <div id="activity-feed" style="height:400px;overflow-y:auto;padding:8px"></div>
+            </div>
+          </div>
+          <div>
+            <div class="g2" style="margin-bottom:14px">
+              <div class="sc"><div class="sl">Today</div><div class="sv" id="reg-today" style="color:var(--green)">0</div></div>
+              <div class="sc"><div class="sl">Total</div><div class="sv" id="reg-total" style="color:var(--a2)">0</div></div>
+              <div class="sc"><div class="sl">Verified</div><div class="sv" id="reg-ver" style="color:var(--purple)">0</div></div>
+              <div class="sc"><div class="sl">Pending</div><div class="sv" id="reg-pend" style="color:var(--gold)">0</div></div>
+            </div>
+            <div class="tw"><div class="th"><h3>Currently Registering</h3></div><div id="curr-reg"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="tab" id="tab-users">
+        <div class="pt">👥 All Users</div>
+        <div class="panel" style="margin-bottom:12px">
+          <input type="text" id="usearch" placeholder="🔍 Search username, email, or Player ID..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 12px;font-size:12px;outline:none" oninput="filterUsers()">
+        </div>
+        <div class="tw"><div id="users-table"><div class="er">Loading...</div></div></div>
+      </div>
+
+      <!-- PENDING REG -->
+      <div class="tab" id="tab-pendingreg">
+        <div class="pt">⏳ Pending Registrations</div>
+        <div class="tw"><div id="pendingreg-table"><div class="er">Loading...</div></div></div>
+      </div>
+
+      <!-- ALL REQUESTS -->
+      <div class="tab" id="tab-requests">
+        <div class="pt">📥 All Requests <span class="sub">Deposit & withdrawal requests from customers</span></div>
+        <div class="tabs-row">
+          <button class="tab-btn active" onclick="filterRequests('all',this)">All</button>
+          <button class="tab-btn" onclick="filterRequests('pending',this)">Pending</button>
+          <button class="tab-btn" onclick="filterRequests('deposit_request',this)">Deposits</button>
+          <button class="tab-btn" onclick="filterRequests('withdrawal_request',this)">Withdrawals</button>
+          <button class="tab-btn" onclick="filterRequests('approved',this)">Approved</button>
+          <button class="tab-btn" onclick="filterRequests('rejected',this)">Rejected</button>
+        </div>
+        <div class="tw"><div id="requests-table"><div class="er">Loading...</div></div></div>
+      </div>
+
+      <!-- DEPOSITS -->
+      <div class="tab" id="tab-deposits">
+        <div class="pt">⬇️ Deposit Transactions</div>
+        <div class="tw"><div id="deposits-table"><div class="er">Loading...</div></div></div>
+      </div>
+
+      <!-- WITHDRAWALS -->
+      <div class="tab" id="tab-withdrawals">
+        <div class="pt">⬆️ Withdrawal Requests <span class="sub">Process → then Approve or Reject</span></div>
+        <div class="tw"><div id="withdrawals-table"><div class="er">Loading...</div></div></div>
+      </div>
+
+      <!-- BETS -->
+      <div class="tab" id="tab-bets">
+        <div class="pt">🎲 All Bets</div>
+        <div class="tw"><div id="bets-table"><div class="er">Loading...</div></div></div>
+      </div>
+
+      <!-- BONUSES -->
+      <div class="tab" id="tab-bonuses">
+        <div class="pt">🎁 Give Bonus</div>
+        <div class="g2">
+          <div class="panel">
+            <h3>🎯 Specific User</h3>
+            <div class="f"><label>Username</label><input type="text" id="bu" placeholder="Username" list="udl"><datalist id="udl"></datalist></div>
+            <div class="f"><label>Amount ($)</label><input type="number" id="ba" placeholder="100" min="1"></div>
+            <div class="f"><label>Reason</label><input type="text" id="br" placeholder="e.g. Welcome bonus"></div>
+            <div class="f"><label>Type</label><select id="bt"><option value="welcome">🎉 Welcome</option><option value="vip">⭐ VIP</option><option value="cashback">💰 Cashback</option><option value="manual">🎁 Manual</option><option value="compensation">🔧 Compensation</option></select></div>
+            <button class="btn bp" style="width:100%" onclick="giveBonus()">🎁 Give Bonus</button>
+          </div>
+          <div class="panel">
+            <h3>🌐 All Users</h3>
+            <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px;margin-bottom:12px;font-size:11px;color:var(--gold)">⚠️ Gives bonus to every registered user!</div>
+            <div class="f"><label>Amount per User ($)</label><input type="number" id="baa" placeholder="50"></div>
+            <div class="f"><label>Reason</label><input type="text" id="bar" placeholder="Weekend promo!"></div>
+            <button class="btn bgold" style="width:100%" onclick="giveBonusAll()">🎁 Give to All</button>
+            <div style="height:1px;background:var(--border);margin:14px 0"></div>
+            <h3 style="border:none;padding:0;margin-bottom:10px">⚡ Quick Presets</h3>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn bgold" onclick="qb(10,'Welcome bonus')">+$10</button>
+              <button class="btn bgold" onclick="qb(25,'VIP reward')">+$25</button>
+              <button class="btn bgold" onclick="qb(50,'Weekend promo')">+$50</button>
+              <button class="btn bgold" onclick="qb(100,'Special event')">+$100</button>
+              <button class="btn bgold" onclick="qb(500,'High roller')">+$500</button>
+            </div>
+            <div class="f" style="margin-top:10px"><label>Username for quick bonus</label><input type="text" id="qbu" placeholder="Username" list="udl"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROMOS -->
+      <div class="tab" id="tab-promos">
+        <div class="pt">🎟️ Promo Codes</div>
+        <div class="panel">
+          <h3>➕ Create Promo Code</h3>
+          <div class="fr">
+            <div class="f"><label>Code</label><input type="text" id="pc" placeholder="WELCOME100" style="text-transform:uppercase"></div>
+            <div class="f"><label>Amount ($)</label><input type="number" id="pa" placeholder="100"></div>
+            <div class="f"><label>Max Uses</label><input type="number" id="pu" placeholder="100"></div>
+            <div class="f"><label>Expiry (optional)</label><input type="datetime-local" id="pe"></div>
+          </div>
+          <button class="btn bp" onclick="createPromo()">🎟️ Create</button>
+        </div>
+        <div class="tw"><div class="th"><h3>All Promo Codes</h3></div><div id="promos-table"><div class="er">Loading...</div></div></div>
+      </div>
+
+      <!-- CHAT -->
+      <div class="tab" id="tab-chat">
+        <div class="pt">💬 Live Chat Support</div>
+        <div style="display:grid;grid-template-columns:240px 1fr;gap:14px;height:580px">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow-y:auto" id="chat-users"><div style="padding:14px;color:var(--muted);font-size:12px">No chats yet</div></div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column">
+            <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+              <span id="chat-hdr" style="font-weight:700;font-size:13px">Select a chat</span>
+              <button class="btn bgold" style="font-size:10px" onclick="chatBonus()">🎁 Give Bonus</button>
+            </div>
+            <div id="chat-msgs" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px"><div style="margin:auto;color:var(--muted);font-size:12px">Select a conversation</div></div>
+            <div style="padding:10px;border-top:1px solid var(--border);display:flex;gap:8px">
+              <input type="text" id="chat-in" placeholder="Reply to customer..." onkeydown="if(event.key==='Enter')sendMsg()" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 11px;font-size:12px;outline:none">
+              <button class="btn bp" onclick="sendMsg()">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANNOUNCEMENTS -->
+      <div class="tab" id="tab-announcements">
+        <div class="pt">📢 Announcements</div>
+        <div class="panel">
+          <h3>Post Announcement</h3>
+          <div class="f"><label>Title</label><input type="text" id="ant" placeholder="e.g. Weekend Bonus!"></div>
+          <div class="f"><label>Message</label><textarea id="anb" placeholder="Write your announcement..."></textarea></div>
+          <div class="f"><label>Type</label><select id="antype"><option value="info">ℹ️ Info</option><option value="promo">🎁 Promo</option><option value="maintenance">🔧 Maintenance</option><option value="winner">🏆 Winner</option></select></div>
+          <button class="btn bp" onclick="postAnn()">📢 Post</button>
+        </div>
+        <div class="tw"><div class="th"><h3>Posted Announcements</h3></div><div id="ann-list"><div class="er">None yet</div></div></div>
+      </div>
+
+      <!-- GAME CONFIG -->
+      <div class="tab" id="tab-gameconfig">
+        <div class="pt">⚙️ Game Configuration</div>
+        <div class="g2">
+          <div class="panel"><h3>🎲 Dice</h3>
+            <div class="f"><label>RTP %</label><div class="rw"><input type="range" class="rng" min="50" max="99" value="99" id="dice-rtp" oninput="rv('dice-rtp-v',this.value+'%')"><div class="rv" id="dice-rtp-v">99%</div></div></div>
+            <div class="fr"><div class="f"><label>Min Bet</label><input type="number" id="dice-min" value="0.01"></div><div class="f"><label>Max Bet</label><input type="number" id="dice-max" value="10000"></div></div>
+            <div class="tw2"><div><div class="tl">Enabled</div></div><label class="tog"><input type="checkbox" id="dice-en" checked><span class="togs"></span></label></div>
+            <button class="btn bp" style="width:100%;margin-top:10px" onclick="saveGC('dice')">💾 Save</button>
+          </div>
+          <div class="panel"><h3>💎 Mines</h3>
+            <div class="f"><label>RTP %</label><div class="rw"><input type="range" class="rng" min="50" max="99" value="99" id="mines-rtp" oninput="rv('mines-rtp-v',this.value+'%')"><div class="rv" id="mines-rtp-v">99%</div></div></div>
+            <div class="fr"><div class="f"><label>Min Bet</label><input type="number" id="mines-min" value="0.01"></div><div class="f"><label>Max Bet</label><input type="number" id="mines-max" value="10000"></div></div>
+            <div class="tw2"><div><div class="tl">Enabled</div></div><label class="tog"><input type="checkbox" id="mines-en" checked><span class="togs"></span></label></div>
+            <button class="btn bp" style="width:100%;margin-top:10px" onclick="saveGC('mines')">💾 Save</button>
+          </div>
+          <div class="panel"><h3>🎰 Slots</h3>
+            <div class="f"><label>RTP %</label><div class="rw"><input type="range" class="rng" min="50" max="98" value="96" id="slots-rtp" oninput="rv('slots-rtp-v',this.value+'%')"><div class="rv" id="slots-rtp-v">96%</div></div></div>
+            <div class="fr"><div class="f"><label>Min Bet</label><input type="number" id="slots-min" value="0.01"></div><div class="f"><label>Max Bet</label><input type="number" id="slots-max" value="10000"></div></div>
+            <div class="tw2"><div><div class="tl">Enabled</div></div><label class="tog"><input type="checkbox" id="slots-en" checked><span class="togs"></span></label></div>
+            <button class="btn bp" style="width:100%;margin-top:10px" onclick="saveGC('slots')">💾 Save</button>
+          </div>
+          <div class="panel"><h3>🪙 Coin Flip</h3>
+            <div class="f"><label>RTP %</label><div class="rw"><input type="range" class="rng" min="50" max="99" value="98" id="coin-rtp" oninput="rv('coin-rtp-v',this.value+'%')"><div class="rv" id="coin-rtp-v">98%</div></div></div>
+            <div class="fr"><div class="f"><label>Min Bet</label><input type="number" id="coin-min" value="0.01"></div><div class="f"><label>Max Bet</label><input type="number" id="coin-max" value="10000"></div></div>
+            <div class="tw2"><div><div class="tl">Enabled</div></div><label class="tog"><input type="checkbox" id="coin-en" checked><span class="togs"></span></label></div>
+            <button class="btn bp" style="width:100%;margin-top:10px" onclick="saveGC('coin')">💾 Save</button>
+          </div>
+        </div>
+        <div class="panel"><h3>🌐 Global Settings</h3>
+          <div class="fr">
+            <div class="f"><label>Starting Balance ($)</label><input type="number" id="g-start" value="1000"></div>
+            <div class="f"><label>Max Win Per Bet ($)</label><input type="number" id="g-maxwin" value="50000"></div>
+          </div>
+          <div class="tw2"><div><div class="tl">🔧 Maintenance Mode</div><div class="ts">Block players from games</div></div><label class="tog"><input type="checkbox" id="g-maint"><span class="togs"></span></label></div>
+          <div class="tw2"><div><div class="tl">📝 Allow Registrations</div></div><label class="tog"><input type="checkbox" id="g-reg" checked><span class="togs"></span></label></div>
+          <div class="tw2"><div><div class="tl">🎁 Auto Welcome Bonus</div></div><label class="tog"><input type="checkbox" id="g-ab"><span class="togs"></span></label></div>
+          <div class="f" style="margin-top:8px"><label>Auto Bonus Amount ($)</label><input type="number" id="g-aba" value="100"></div>
+          <button class="btn bp" style="margin-top:10px" onclick="saveGlobal()">💾 Save Global</button>
+        </div>
+      </div>
+
+      <!-- GAME MANAGER -->
+      <div class="tab" id="tab-gamemanager">
+        <div class="pt">🎮 Game Manager <span class="sub">Add games to 4 categories</span></div>
+        <div class="panel">
+          <h3>➕ Add New Game</h3>
+          <div class="fr">
+            <div class="f"><label>Category</label><select id="gm-cat"><option value="casino">🎰 Casino</option><option value="slots">🎲 Slots</option><option value="sports">⚽ Sports</option><option value="quickgames">⚡ Quick Games</option></select></div>
+            <div class="f"><label>Game Name</label><input type="text" id="gm-name" placeholder="e.g. Blackjack"></div>
+          </div>
+          <div class="fr">
+            <div class="f"><label>Thumbnail (emoji or URL)</label><input type="text" id="gm-thumb" placeholder="🃏 or https://..."></div>
+            <div class="f"><label>Description</label><input type="text" id="gm-desc" placeholder="Short description"></div>
+          </div>
+          <div class="fr3">
+            <div class="f"><label>RTP %</label><input type="number" id="gm-rtp" value="96"></div>
+            <div class="f"><label>Min Bet ($)</label><input type="number" id="gm-min" value="0.01"></div>
+            <div class="f"><label>Max Bet ($)</label><input type="number" id="gm-max" value="10000"></div>
+          </div>
+          <button class="btn bp" onclick="addGame()">➕ Add Game</button>
+        </div>
+        <div class="g4" id="game-sections">
+          <div><div style="font-weight:700;margin-bottom:8px;font-size:13px">🎰 Casino</div><div id="games-casino"></div></div>
+          <div><div style="font-weight:700;margin-bottom:8px;font-size:13px">🎲 Slots</div><div id="games-slots"></div></div>
+          <div><div style="font-weight:700;margin-bottom:8px;font-size:13px">⚽ Sports</div><div id="games-sports"></div></div>
+          <div><div style="font-weight:700;margin-bottom:8px;font-size:13px">⚡ Quick Games</div><div id="games-quickgames"></div></div>
+        </div>
+      </div>
+
+      <!-- SITE EDITOR -->
+      <div class="tab" id="tab-siteeditor">
+        <div class="pt">🎨 Site Editor</div>
+        <div class="g2">
+          <div class="panel"><h3>🏷️ Branding & Logo</h3>
+            <div class="f"><label>Site Name</label><input type="text" id="s-name" value="AUSGG"></div>
+            <div class="f"><label>Tagline</label><input type="text" id="s-tag" value="The ultimate crypto casino."></div>
+            <div class="f"><label>Welcome Heading</label><input type="text" id="s-wel" value="Welcome to AUSGG 👋"></div>
+            <div class="f"><label>Welcome Subtext</label><input type="text" id="s-sub" value="Fast, fair and thrilling."></div>
+            <div class="f">
+              <label>Site Logo Image</label>
+              <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+                <div id="logo-preview" style="width:60px;height:60px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+                  <span id="logo-preview-icon" style="font-size:28px">🎰</span>
+                </div>
+                <div style="flex:1">
+                  <label style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--bg3);border:2px dashed var(--border);border-radius:8px;padding:12px;cursor:pointer;font-size:12px;color:var(--muted);transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                    📁 Upload Logo Image
+                    <input type="file" accept="image/*" style="display:none" onchange="uploadImage(this,'logo')">
+                  </label>
+                  <div style="font-size:10px;color:var(--muted);margin-top:4px">PNG, JPG, SVG recommended. Max 2MB.</div>
+                </div>
+              </div>
+              <input type="text" id="s-logo-url" placeholder="Or paste image URL..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:7px 10px;font-size:12px;outline:none" oninput="previewLogoUrl(this.value)">
+            </div>
+            <div class="f">
+              <label>Favicon / Site Icon</label>
+              <div style="display:flex;gap:10px;align-items:center">
+                <div id="favicon-preview" style="width:40px;height:40px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;flex-shrink:0">🎰</div>
+                <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--bg3);border:2px dashed var(--border);border-radius:8px;padding:10px;cursor:pointer;font-size:12px;color:var(--muted)" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                  📁 Upload Favicon
+                  <input type="file" accept="image/*" style="display:none" onchange="uploadImage(this,'favicon')">
+                </label>
+              </div>
+            </div>
+            <button class="btn bp" style="width:100%" onclick="saveSC()">💾 Save Branding</button>
+          </div>
+          <div class="panel"><h3>🎨 Colors</h3>
+            <div class="f"><label>Accent Color</label><div class="rw"><input type="color" id="c-acc" value="#00e701" style="width:40px;height:32px;padding:2px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);cursor:pointer"><input type="text" id="c-acc-h" value="#00e701" oninput="document.getElementById('c-acc').value=this.value"></div></div>
+            <div class="f"><label>Background</label><div class="rw"><input type="color" id="c-bg" value="#0f1923" style="width:40px;height:32px;padding:2px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);cursor:pointer"><input type="text" id="c-bg-h" value="#0f1923" oninput="document.getElementById('c-bg').value=this.value"></div></div>
+            <div class="f"><label>Card Background</label><div class="rw"><input type="color" id="c-bg2" value="#1a2634" style="width:40px;height:32px;padding:2px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);cursor:pointer"><input type="text" id="c-bg2-h" value="#1a2634" oninput="document.getElementById('c-bg2').value=this.value"></div></div>
+            <button class="btn bp" style="width:100%" onclick="saveColors()">🎨 Apply Colors</button>
+          </div>
+          <div class="panel"><h3>📢 Banner</h3>
+            <div class="tw2"><div><div class="tl">Show Banner</div></div><label class="tog"><input type="checkbox" id="ban-en"><span class="togs"></span></label></div>
+            <div class="f" style="margin-top:10px"><label>Banner Text</label><input type="text" id="ban-txt" placeholder="🎉 Special event this weekend!"></div>
+            <div class="f"><label>Color</label><select id="ban-type"><option value="info">ℹ️ Blue</option><option value="success">✅ Green</option><option value="warning">⚠️ Gold</option><option value="danger">🚨 Red</option></select></div>
+            <button class="btn bp" style="width:100%" onclick="saveBanner()">📢 Update Banner</button>
+          </div>
+          <div class="panel"><h3>💉 Custom CSS</h3>
+            <div class="f"><textarea id="custom-css" placeholder=":root { --accent: #ff6b6b; }" style="font-family:monospace;font-size:11px;min-height:100px"></textarea></div>
+            <button class="btn bp" style="width:100%" onclick="saveCSS()">💉 Inject CSS</button>
+          </div>
+        </div>
+        <div class="panel"><h3>🎮 Edit Game Names & Button Text</h3>
+          <div class="fr">
+            <div class="f"><label>Dice Name</label><input type="text" id="t-dice" value="Dice"></div>
+            <div class="f"><label>Dice Description</label><input type="text" id="t-dice-d" value="Roll under or over to win"></div>
+            <div class="f"><label>Mines Name</label><input type="text" id="t-mines" value="Mines"></div>
+            <div class="f"><label>Mines Description</label><input type="text" id="t-mines-d" value="Avoid bombs, collect gems"></div>
+          </div>
+          <div class="fr">
+            <div class="f"><label>Slots Name</label><input type="text" id="t-slots" value="Slots"></div>
+            <div class="f"><label>Slots Description</label><input type="text" id="t-slots-d" value="Spin the reels to match"></div>
+            <div class="f"><label>Coin Flip Name</label><input type="text" id="t-coin" value="Coin Flip"></div>
+            <div class="f"><label>Coin Flip Description</label><input type="text" id="t-coin-d" value="Heads or tails, 50/50"></div>
+          </div>
+          <button class="btn bp" onclick="saveTexts()">💾 Save All Text</button>
+        </div>
+      </div>
+
+      <!-- DEPOSIT SETUP -->
+      <div class="tab" id="tab-depositsetup">
+        <div class="pt">📋 Deposit Setup <span class="sub">What customers see when depositing</span></div>
+        <div class="g2">
+          <div class="panel"><h3>💳 Card Instructions</h3><div class="f"><textarea id="di-card" rows="4" placeholder="Instructions shown when customer selects Card..."></textarea></div><button class="btn bp" style="width:100%" onclick="saveDI()">💾 Save</button></div>
+          <div class="panel"><h3>₿ Crypto Address</h3>
+            <div class="f"><label>Coin Name</label><input type="text" id="di-coin" placeholder="Bitcoin (BTC)"></div>
+            <div class="f"><label>Wallet Address</label><input type="text" id="di-addr" placeholder="bc1q..."></div>
+            <button class="btn bp" style="width:100%" onclick="saveDI()">💾 Save</button>
+          </div>
+          <div class="panel"><h3>🏦 Bank Transfer</h3>
+            <div class="f"><label>Bank Name</label><input type="text" id="di-bank" placeholder="ANZ Bank"></div>
+            <div class="f"><label>Account Number</label><input type="text" id="di-acc" placeholder="1234-5678-9012"></div>
+            <div class="f"><label>Account Name</label><input type="text" id="di-holder" placeholder="AUSGG Casino"></div>
+            <div class="f"><label>BSB / Routing</label><input type="text" id="di-bsb" placeholder="062-000"></div>
+            <button class="btn bp" style="width:100%" onclick="saveDI()">💾 Save</button>
+          </div>
+          <div class="panel"><h3>📱 E-Wallet</h3>
+            <div class="f"><label>Provider</label><input type="text" id="di-ew-prov" placeholder="PayPal"></div>
+            <div class="f"><label>Account / Email</label><input type="text" id="di-ew-acc" placeholder="payments@ausgg.com"></div>
+            <button class="btn bp" style="width:100%" onclick="saveDI()">💾 Save</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WITHDRAWAL FORM BUILDER -->
+      <div class="tab" id="tab-wdform">
+        <div class="pt">📝 Withdrawal Form Builder <span class="sub">Configure what info customers must provide</span></div>
+        <div class="panel">
+          <h3>Current Form Fields</h3>
+          <div id="wd-form-fields"></div>
+          <button class="btn bp" style="margin-top:12px" onclick="saveWDForm()">💾 Save Form</button>
+        </div>
+      </div>
+
+      <!-- PROMOTIONS EDITOR -->
+      <div class="tab" id="tab-promotionseditor">
+        <div class="pt">🎁 Promotions Editor <span class="sub">Manage bonus offers for players</span></div>
+        
+        <div class="panel">
+          <h3>🏔️ Hero Banner</h3>
+          <div class="fr">
+            <div class="f"><label>Banner Title</label><input type="text" id="pb-title" placeholder="🎰 BIGGEST BONUSES IN AUSTRALIA"></div>
+            <div class="f"><label>Banner Subtitle</label><input type="text" id="pb-sub" placeholder="Claim your welcome bonus today"></div>
+          </div>
+          <div class="f"><label>Banner Image URL (optional)</label><input type="text" id="pb-img" placeholder="https://..."></div>
+          <div class="tw2"><div><div class="tl">Show Banner</div></div><label class="tog"><input type="checkbox" id="pb-en" checked><span class="togs"></span></label></div>
+          <button class="btn bp" style="margin-top:10px" onclick="savePromoBanner()">💾 Save Banner</button>
+        </div>
+
+        <div class="g2">
+          <div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:12px">💳 Deposit Bonuses</div>
+            <div class="panel">
+              <h3>➕ Add Deposit Bonus</h3>
+              <div class="f"><label>Title</label><input type="text" id="dep-b-title" placeholder="Welcome Deposit Bonus"></div>
+              <div class="f"><label>Description</label><textarea id="dep-b-desc" placeholder="Get 100% match on first deposit..."></textarea></div>
+              <div class="f"><label>Image URL (optional)</label><input type="text" id="dep-b-img" placeholder="https://..."></div>
+              <div class="fr">
+                <div class="f"><label>Badge Text</label><input type="text" id="dep-b-badge" placeholder="NEW"></div>
+                <div class="f"><label>Badge Color</label><input type="color" id="dep-b-color" value="#00e701" style="width:100%;height:36px;padding:2px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);cursor:pointer"></div>
+              </div>
+              <div class="fr3">
+                <div class="f"><label>Bonus %</label><input type="number" id="dep-b-pct" value="100"></div>
+                <div class="f"><label>Min Deposit ($)</label><input type="number" id="dep-b-min" value="10"></div>
+                <div class="f"><label>Max Bonus ($)</label><input type="number" id="dep-b-max" value="500"></div>
+              </div>
+              <div class="f"><label>Promo Code</label><input type="text" id="dep-b-code" placeholder="WELCOME100" style="text-transform:uppercase"></div>
+              <button class="btn bp" style="width:100%" onclick="addBonus('deposit')">➕ Add Deposit Bonus</button>
+            </div>
+            <div id="dep-bonuses-list"></div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:12px">🎁 No Deposit Bonuses</div>
+            <div class="panel">
+              <h3>➕ Add No Deposit Bonus</h3>
+              <div class="f"><label>Title</label><input type="text" id="nodep-b-title" placeholder="Free Welcome Bonus"></div>
+              <div class="f"><label>Description</label><textarea id="nodep-b-desc" placeholder="Get $10 free just for registering..."></textarea></div>
+              <div class="f"><label>Image URL (optional)</label><input type="text" id="nodep-b-img" placeholder="https://..."></div>
+              <div class="fr">
+                <div class="f"><label>Badge Text</label><input type="text" id="nodep-b-badge" placeholder="FREE"></div>
+                <div class="f"><label>Badge Color</label><input type="color" id="nodep-b-color" value="#a855f7" style="width:100%;height:36px;padding:2px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);cursor:pointer"></div>
+              </div>
+              <div class="fr">
+                <div class="f"><label>Free Amount ($)</label><input type="number" id="nodep-b-amt" value="10"></div>
+                <div class="f"><label>Promo Code</label><input type="text" id="nodep-b-code" placeholder="FREETEN" style="text-transform:uppercase"></div>
+              </div>
+              <button class="btn bp" style="width:100%" onclick="addBonus('nodeposit')">➕ Add No Deposit Bonus</button>
+            </div>
+            <div id="nodep-bonuses-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABOUT US EDITOR -->
+      <div class="tab" id="tab-abouteditor">
+        <div class="pt">ℹ️ About Us Editor <span class="sub">Edit everything on the About page</span></div>
+        <div class="g2">
+          <div class="panel">
+            <h3>🏷️ Page Header</h3>
+            <div class="f"><label>Page Title</label><input type="text" id="ab-title" placeholder="About AUSGG Casino"></div>
+            <div class="f"><label>Subtitle</label><input type="text" id="ab-sub" placeholder="Australia's Premier Online Gaming Destination"></div>
+            <div class="f"><label>Hero Image URL</label><input type="text" id="ab-heroimg" placeholder="https://..."></div>
+            <button class="btn bp" style="width:100%" onclick="saveAbout()">💾 Save Header</button>
+          </div>
+          <div class="panel">
+            <h3>📖 Story & Mission</h3>
+            <div class="f"><label>Description</label><textarea id="ab-desc" rows="4" placeholder="AUSGG Casino was founded..."></textarea></div>
+            <div class="f"><label>Mission Statement</label><textarea id="ab-mission" rows="3" placeholder="Our mission is..."></textarea></div>
+            <button class="btn bp" style="width:100%" onclick="saveAbout()">💾 Save Story</button>
+          </div>
+          <div class="panel">
+            <h3>📞 Contact Info</h3>
+            <div class="f"><label>Email</label><input type="text" id="ab-email" placeholder="support@ausgg.com"></div>
+            <div class="f"><label>Phone</label><input type="text" id="ab-phone" placeholder="1800 AUSGG"></div>
+            <div class="f"><label>Address</label><input type="text" id="ab-addr" placeholder="Level 10, 123 Collins St, Melbourne VIC 3000"></div>
+            <div class="f"><label>License Text</label><textarea id="ab-license" rows="2" placeholder="AUSGG Casino operates under..."></textarea></div>
+            <button class="btn bp" style="width:100%" onclick="saveAbout()">💾 Save Contact</button>
+          </div>
+          <div class="panel">
+            <h3>📊 Stats</h3>
+            <div id="ab-stats-editor"></div>
+            <button class="btn bs" style="margin-top:8px" onclick="addStat()">➕ Add Stat</button>
+            <button class="btn bp" style="margin-top:8px;margin-left:8px" onclick="saveAbout()">💾 Save Stats</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>✨ Features (Why Choose Us)</h3>
+          <div id="ab-features-editor" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"></div>
+          <button class="btn bs" style="margin-top:10px" onclick="addFeature()">➕ Add Feature</button>
+          <button class="btn bp" style="margin-top:10px;margin-left:8px" onclick="saveAbout()">💾 Save Features</button>
+        </div>
+        <div class="panel">
+          <h3>👥 Team Members</h3>
+          <div id="ab-team-editor" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"></div>
+          <button class="btn bs" style="margin-top:10px" onclick="addTeamMember()">➕ Add Team Member</button>
+          <button class="btn bp" style="margin-top:10px;margin-left:8px" onclick="saveAbout()">💾 Save Team</button>
+        </div>
+      </div>
+
+      <!-- THEMES -->
+      <div class="tab" id="tab-themes">
+        <div class="pt">🖌️ Themes</div>
+        <div class="g3" id="themes-grid"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- USER DETAIL MODAL -->
+<div class="modal" id="user-modal">
+  <div class="modal-box" style="max-width:700px">
+    <button class="modal-close" onclick="closeModal('user-modal')">✕</button>
+    <h3 id="um-title">User Detail</h3>
+    <div class="tabs-row">
+      <button class="tab-btn active" onclick="umTab('profile',this)">👤 Profile</button>
+      <button class="tab-btn" onclick="umTab('bets',this)">🎲 Bets</button>
+      <button class="tab-btn" onclick="umTab('transactions',this)">💰 Transactions</button>
+      <button class="tab-btn" onclick="umTab('edit',this)">✏️ Edit</button>
+    </div>
+    <div id="um-profile"></div>
+    <div id="um-bets" style="display:none"></div>
+    <div id="um-transactions" style="display:none"></div>
+    <div id="um-edit" style="display:none"></div>
+  </div>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div class="modal" id="receipt-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('receipt-modal')">✕</button>
+    <h3>📎 Deposit Receipt</h3>
+    <div id="receipt-content"></div>
+  </div>
+</div>
+
+<div id="notif"></div>
+
+<script>
+const API='http://localhost:3001/api', AK='ausgg_admin_2024';
+let allUsers=[], allReqs=[], currentChat=null, refreshInt=null, countdown=10;
+let currentUserId=null;
+
+async function api(m,p,b=null){
+  try{
+    const r=await fetch(API+p,{method:m,headers:{'Content-Type':'application/json','x-admin-key':AK},body:b?JSON.stringify(b):null});
+    return await r.json();
+  }catch(e){return{};}
+}
+
+function login(){
+  if(document.getElementById('ak').value===AK){
+    document.getElementById('ls').style.display='none';
+    document.getElementById('app').style.display='flex';
+    refreshAll();
+    api('GET','/admin/assign-ids');
+    refreshInt=setInterval(()=>{countdown--;document.getElementById('rc').textContent=countdown+'s';if(countdown<=0){refreshAll();countdown=10;}},1000);
+  }else{document.getElementById('lerr').style.display='block';}
+}
+document.getElementById('ak').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+function doLogout(){document.getElementById('ls').style.display='flex';document.getElementById('app').style.display='none';clearInterval(refreshInt);}
+
+function notif(msg,type='success'){
+  const n=document.getElementById('notif');
+  const d=document.createElement('div');
+  const cls={success:'ns2',error:'ne',info:'ni3',gold:'ng'};
+  d.className='ni2 '+(cls[type]||'ns2');
+  d.textContent=msg;
+  n.appendChild(d);
+  setTimeout(()=>{d.style.opacity='0';d.style.transition='opacity .3s';setTimeout(()=>d.remove(),300);},3000);
+}
+
+function st(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(el)el.classList.add('active');
+}
+
+function refreshAll(){
+  loadDashboard();loadUsers();loadPendingReg();loadRequests();loadTransactions();
+  loadBets();loadChats();loadGameConfig();loadSiteConfig();loadDI();loadGames();loadAnn();loadPromos();
+  countdown=10;
+}
+
+function fmt(n){return'$'+parseFloat(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function fmtD(s){if(!s)return'—';return new Date(s).toLocaleString();}
+function ago(s){if(!s)return'—';const d=Math.floor((Date.now()-new Date(s))/1000);if(d<60)return d+'s ago';if(d<3600)return Math.floor(d/60)+'m ago';if(d<86400)return Math.floor(d/3600)+'h ago';return Math.floor(d/86400)+'d ago';}
+function rv(id,val){document.getElementById(id).textContent=val;}
+function ca(str){const c=['#e74c3c','#3498db','#9b59b6','#f39c12','#1abc9c','#e91e63'];let h=0;for(let x of str)h=x.charCodeAt(0)+((h<<5)-h);return c[Math.abs(h)%c.length];}
+
+// ── DASHBOARD ──
+async function loadDashboard(){
+  const[users,reqs,bets,txs]=await Promise.all([api('GET','/admin/users'),api('GET','/admin/pending-requests'),api('GET','/admin/bets'),api('GET','/admin/transactions')]);
+  const u=users.users||[],r=reqs.requests||[],b=bets.bets||[],t=txs.transactions||[];
+  document.getElementById('d-users').textContent=u.length;
+  document.getElementById('d-reqs').textContent=r.filter(x=>x.status==='pending').length;
+  document.getElementById('d-bets').textContent=b.length;
+  document.getElementById('d-wag').textContent=fmt(b.reduce((s,x)=>s+x.betAmount,0));
+  const pw=r.filter(x=>x.type==='withdrawal_request'&&x.status==='pending').length;
+  document.getElementById('d-wd').textContent=pw;
+  document.getElementById('wdb').textContent=pw;
+  document.getElementById('reqb').textContent=r.filter(x=>x.status==='pending').length;
+  const umap={};u.forEach(x=>umap[x.id]=x.username);
+  const regRows=u.slice(0,5).map(x=>`<tr><td><div style="display:flex;align-items:center;gap:6px"><div class="av" style="background:${ca(x.username)}22;color:${ca(x.username)}">${x.username[0].toUpperCase()}</div><div><div style="font-weight:600;font-size:12px">${x.username}</div><div style="font-size:10px;color:var(--muted)">${x.playerId||'—'}</div></div></div></td><td>${fmt(x.balance)}</td><td><span class="st ${x.emailVerified?'verified':'pending'}">${x.emailVerified?'✅':'⏳'}</span></td><td style="font-size:10px;color:var(--muted)">${ago(x.createdAt)}</td></tr>`).join('');
+  document.getElementById('dash-reg').innerHTML=`<table><thead><tr><th>User</th><th>Balance</th><th>Status</th><th>Joined</th></tr></thead><tbody>${regRows||'<tr><td colspan="4" class="er">No users</td></tr>'}</tbody></table>`;
+  const reqRows=r.slice(0,5).map(x=>`<tr><td><strong>${x.username}</strong></td><td>${x.type==='deposit_request'?'⬇️ Deposit':'⬆️ Withdraw'}</td><td>${fmt(x.amount)}</td><td><span class="st ${x.status}">${x.status}</span></td><td>${ago(x.createdAt)}</td></tr>`).join('');
+  document.getElementById('dash-req').innerHTML=`<table><thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>When</th></tr></thead><tbody>${reqRows||'<tr><td colspan="5" class="er">No requests</td></tr>'}</tbody></table>`;
+}
+
+// ── LIVE FEED ──
+async function loadLiveFeed(){
+  const data=await api('GET','/admin/reg-feed');
+  const u=data.users||[],p=data.pending||[];
+  document.getElementById('reg-total').textContent=u.length;
+  document.getElementById('reg-ver').textContent=u.filter(x=>x.emailVerified).length;
+  document.getElementById('reg-pend').textContent=p.length;
+  document.getElementById('prb').textContent=p.length;
+  const today=new Date();today.setHours(0,0,0,0);
+  document.getElementById('reg-today').textContent=u.filter(x=>new Date(x.createdAt)>=today).length;
+  const feed=document.getElementById('activity-feed');
+  const events=[...u.map(x=>({icon:'🆕',text:`<strong>${x.username}</strong> registered`,time:x.createdAt})),...p.map(x=>({icon:'⏳',text:`<strong>${x.username}</strong> registering...`,time:x.expiresAt}))].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,30);
+  feed.innerHTML=events.map(e=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 8px;background:var(--bg3);border-radius:6px;margin-bottom:4px;border:1px solid var(--border);font-size:11px"><span style="font-size:16px">${e.icon}</span><div style="flex:1">${e.text}</div><div style="color:var(--muted)">${ago(e.time)}</div></div>`).join('')||'<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">No activity</div>';
+  const prows=p.map(x=>`<tr><td><strong>${x.username}</strong></td><td>${x.email}</td><td><span class="st pending">⏳</span></td><td style="font-size:10px;color:var(--muted)">${ago(x.expiresAt)} left</td><td><button class="btn bd" style="font-size:10px;padding:3px 7px" onclick="delPending('${x.email}')">Remove</button></td></tr>`).join('');
+  document.getElementById('curr-reg').innerHTML=`<table><thead><tr><th>Username</th><th>Email</th><th>Status</th><th>Expires</th><th></th></tr></thead><tbody>${prows||'<tr><td colspan="5" class="er">Nobody registering</td></tr>'}</tbody></table>`;
+}
+
+// ── USERS ──
+async function loadUsers(){
+  const data=await api('GET','/admin/users');
+  allUsers=data.users||[];
+  document.getElementById('ub').textContent=allUsers.length;
+  const dl=document.getElementById('udl');
+  if(dl)dl.innerHTML=allUsers.map(u=>`<option value="${u.username}">`).join('');
+  renderUsers(allUsers);
+}
+
+function renderUsers(users){
+  const rows=users.map(u=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="av" style="background:${ca(u.username)}22;color:${ca(u.username)}">${u.username[0].toUpperCase()}</div><div><div style="font-weight:600;font-size:12px">${u.username}</div><div style="font-size:10px;color:var(--muted)">${u.email}</div></div></div></td>
+      <td><code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:10px">${u.playerId||'—'}</code></td>
+      <td style="color:var(--green);font-weight:700">${fmt(u.balance)}</td>
+      <td>${u.totalBets||0}</td>
+      <td>${fmt(u.totalWon)}</td>
+      <td><span class="st ${u.emailVerified?'verified':'pending'}">${u.emailVerified?'✅ Verified':'⏳'}</span></td>
+      <td><span class="st ${u.banned?'rejected':'approved'}">${u.banned?'🚫 Banned':'✅ Active'}</span></td>
+      <td>${ago(u.createdAt)}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn bg" style="font-size:10px;padding:3px 7px" onclick="openUser('${u.id}')">👁️ View</button>
+        <button class="btn bgold" style="font-size:10px;padding:3px 7px" onclick="qgb('${u.username}')">🎁</button>
+        <button class="btn bd" style="font-size:10px;padding:3px 7px" onclick="banUser('${u.username}','${u.banned}')">🚫</button>
+      </div></td>
+    </tr>`).join('');
+  document.getElementById('users-table').innerHTML=`<table><thead><tr><th>User</th><th>Player ID</th><th>Balance</th><th>Bets</th><th>Won</th><th>Email</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody>${rows||'<tr><td colspan="9" class="er">No users</td></tr>'}</tbody></table>`;
+}
+
+function filterUsers(){
+  const q=document.getElementById('usearch').value.toLowerCase();
+  renderUsers(allUsers.filter(u=>u.username.toLowerCase().includes(q)||u.email.toLowerCase().includes(q)||(u.playerId||'').toLowerCase().includes(q)));
+}
+
+async function openUser(userId){
+  currentUserId=userId;
+  const data=await api('GET','/admin/user-detail/'+userId);
+  const u=data.user||{},bets=data.bets||[],txs=data.transactions||[];
+  document.getElementById('um-title').textContent=`👤 ${u.username} — ${u.playerId||'No ID'}`;
+  document.getElementById('um-profile').innerHTML=`
+    <div class="g2">
+      <div><div class="sl">Player ID</div><code style="font-size:16px;font-weight:700;color:var(--a2)">${u.playerId||'—'}</code></div>
+      <div><div class="sl">Balance</div><div style="font-size:20px;font-weight:700;color:var(--green)">${fmt(u.balance)}</div></div>
+      <div><div class="sl">Email</div><div>${u.email}</div><div style="font-size:10px;color:var(--muted)">${u.emailVerified?'✅ Verified':'⏳ Not verified'}</div></div>
+      <div><div class="sl">Status</div><span class="st ${u.banned?'rejected':'approved'}">${u.banned?'🚫 Banned':'✅ Active'}</span></div>
+      <div><div class="sl">Total Bets</div><div style="font-weight:700">${u.totalBets||0}</div></div>
+      <div><div class="sl">Total Won</div><div style="color:var(--green);font-weight:700">${fmt(u.totalWon)}</div></div>
+      <div><div class="sl">Total Lost</div><div style="color:var(--red);font-weight:700">${fmt(u.totalLost)}</div></div>
+      <div><div class="sl">Joined</div><div>${fmtD(u.createdAt)}</div></div>
+      <div><div class="sl">Last Login</div><div>${fmtD(u.lastLogin)}</div></div>
+      <div><div class="sl">Bank Info</div><div style="font-size:11px">${u.bankInfo?JSON.stringify(u.bankInfo):'—'}</div></div>
+    </div>`;
+  const betRows=bets.slice(0,20).map(b=>`<tr><td>${b.game}</td><td>${fmt(b.betAmount)}</td><td style="color:${b.win?'var(--green)':'var(--red)'};font-weight:700">${b.win?'+'+fmt(b.payout):'-'+fmt(b.betAmount)}</td><td>${b.detail}</td><td>${ago(b.createdAt)}</td></tr>`).join('');
+  document.getElementById('um-bets').innerHTML=`<table><thead><tr><th>Game</th><th>Bet</th><th>Result</th><th>Detail</th><th>When</th></tr></thead><tbody>${betRows||'<tr><td colspan="5" class="er">No bets</td></tr>'}</tbody></table>`;
+  const txRows=txs.slice(0,20).map(t=>`<tr><td>${t.type}</td><td style="color:${t.type==='withdraw'?'var(--red)':'var(--green)'};font-weight:700">${fmt(t.amount)}</td><td>${t.method||'—'}</td><td><span class="st ${t.status}">${t.status}</span></td><td>${ago(t.createdAt)}</td></tr>`).join('');
+  document.getElementById('um-transactions').innerHTML=`<table><thead><tr><th>Type</th><th>Amount</th><th>Method</th><th>Status</th><th>When</th></tr></thead><tbody>${txRows||'<tr><td colspan="5" class="er">No transactions</td></tr>'}</tbody></table>`;
+  document.getElementById('um-edit').innerHTML=`
+    <div class="g2">
+      <div class="f"><label>New Balance ($)</label><input type="number" id="ue-bal" value="${u.balance}"></div>
+      <div class="f"><label>New Password (leave blank to keep)</label><input type="password" id="ue-pass" placeholder="New password (min 6 chars)"></div>
+      <div class="f"><label>Bank Name</label><input type="text" id="ue-bank" value="${u.bankInfo?.bankName||''}"></div>
+      <div class="f"><label>Account Number</label><input type="text" id="ue-acc" value="${u.bankInfo?.accountNumber||''}"></div>
+      <div class="f"><label>BSB / Routing</label><input type="text" id="ue-bsb" value="${u.bankInfo?.bsb||''}"></div>
+      <div class="f"><label>Notes</label><input type="text" id="ue-notes" value="${u.notes||''}"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn bp" onclick="saveUserEdit('${u.id}')">💾 Save Changes</button>
+      <button class="btn bd" onclick="banUser('${u.username}','${u.banned}')">🚫 ${u.banned?'Unban':'Ban'}</button>
+    </div>`;
+  document.getElementById('user-modal').classList.add('show');
+}
+
+function umTab(name,el){
+  ['profile','bets','transactions','edit'].forEach(n=>{document.getElementById('um-'+n).style.display=n===name?'block':'none';});
+  document.querySelectorAll('#user-modal .tab-btn').forEach(b=>b.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+
+async function saveUserEdit(userId){
+  const updates={
+    balance:parseFloat(document.getElementById('ue-bal').value),
+    notes:document.getElementById('ue-notes').value,
+    bankInfo:{bankName:document.getElementById('ue-bank').value,accountNumber:document.getElementById('ue-acc').value,bsb:document.getElementById('ue-bsb').value}
+  };
+  const np=document.getElementById('ue-pass').value;
+  if(np) updates.newPassword=np;
+  const data=await api('POST','/admin/edit-user',{userId,updates});
+  if(data.error)return notif(data.error,'error');
+  notif('✅ User updated!');
+  loadUsers();
+  openUser(userId);
+}
+
+async function banUser(username,banned){
+  await api('POST','/admin/ban-user',{username});
+  notif(`${banned==='true'?'✅ Unbanned':'🚫 Banned'} ${username}`);
+  loadUsers();
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+
+// ── PENDING REG ──
+async function loadPendingReg(){
+  const data=await api('GET','/admin/pending-users');
+  const p=data.pendingUsers||[];
+  document.getElementById('prb').textContent=p.length;
+  const rows=p.map(u=>`<tr><td><strong>${u.username}</strong></td><td>${u.email}</td><td><span class="st pending">⏳ Awaiting Code</span></td><td>${fmtD(u.expiresAt)}</td><td><button class="btn bd" style="font-size:10px;padding:3px 7px" onclick="delPending('${u.email}')">Remove</button></td></tr>`).join('');
+  document.getElementById('pendingreg-table').innerHTML=`<table><thead><tr><th>Username</th><th>Email</th><th>Status</th><th>Expires</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="er">No pending registrations</td></tr>'}</tbody></table>`;
+}
+
+async function delPending(email){await api('POST','/admin/delete-pending',{email});notif('🗑️ Removed');loadPendingReg();}
+
+// ── REQUESTS ──
+let reqFilter='all';
+async function loadRequests(){
+  const data=await api('GET','/admin/pending-requests');
+  allReqs=data.requests||[];
+  document.getElementById('reqb').textContent=allReqs.filter(r=>r.status==='pending').length;
+  renderRequests(allReqs);
+}
+
+function filterRequests(filter,el){
+  reqFilter=filter;
+  document.querySelectorAll('#tab-requests .tab-btn').forEach(b=>b.classList.remove('active'));
+  if(el)el.classList.add('active');
+  let filtered=allReqs;
+  if(filter==='pending') filtered=allReqs.filter(r=>r.status==='pending');
+  else if(filter==='deposit_request') filtered=allReqs.filter(r=>r.type==='deposit_request');
+  else if(filter==='withdrawal_request') filtered=allReqs.filter(r=>r.type==='withdrawal_request');
+  else if(filter==='approved') filtered=allReqs.filter(r=>r.status==='approved');
+  else if(filter==='rejected') filtered=allReqs.filter(r=>r.status==='rejected');
+  renderRequests(filtered);
+}
+
+function renderRequests(reqs){
+  const rows=reqs.map(r=>`
+    <tr>
+      <td><strong>${r.username}</strong><div style="font-size:10px;color:var(--muted)">${r.playerId||'—'}</div></td>
+      <td>${r.type==='deposit_request'?'⬇️ Deposit':'⬆️ Withdraw'}</td>
+      <td style="font-weight:700;color:${r.type==='deposit_request'?'var(--green)':'var(--red)'}">${fmt(r.amount)}</td>
+      <td>${r.method||'—'}</td>
+      <td>${r.receipt?`<button class="btn bg" style="font-size:10px;padding:3px 7px" onclick="viewReceipt('${r.id}')">📎 View</button>`:'—'}</td>
+      <td>${r.note||r.formData?JSON.stringify(r.formData||{}).substring(0,40):'—'}</td>
+      <td><span class="st ${r.status}">${r.status}</span></td>
+      <td>${ago(r.createdAt)}</td>
+      <td>${r.status==='pending'?`
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          ${r.type==='withdrawal_request'?`<button class="btn" style="font-size:10px;padding:3px 7px;background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.3)" onclick="processReq('${r.id}','process')">⚙️ Process</button>`:''}
+          <button class="btn bs" style="font-size:10px;padding:3px 7px" onclick="processReq('${r.id}','approve')">✅ Approve</button>
+          <button class="btn bd" style="font-size:10px;padding:3px 7px" onclick="processReq('${r.id}','reject')">❌ Reject</button>
+        </div>`:'—'}
+      </td>
+    </tr>`).join('');
+  document.getElementById('requests-table').innerHTML=`<table><thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Method</th><th>Receipt</th><th>Details</th><th>Status</th><th>When</th><th>Actions</th></tr></thead><tbody>${rows||'<tr><td colspan="9" class="er">No requests</td></tr>'}</tbody></table>`;
+}
+
+async function processReq(id,action){
+  const note=action==='reject'?prompt('Reason for rejection (optional):'):'';
+  const data=await api('POST','/admin/process-request',{id,action,note});
+  if(data.error)return notif(data.error,'error');
+  notif(`✅ Request ${action}d!`);
+  loadRequests();loadDashboard();
+}
+
+function viewReceipt(id){
+  const req=allReqs.find(r=>r.id===id);
+  if(!req)return;
+  const rc=document.getElementById('receipt-content');
+  rc.innerHTML=`<p style="margin-bottom:8px;font-size:12px;color:var(--muted)">${req.receiptName||'Receipt'} — ${fmt(req.amount)} from ${req.username}</p>`;
+  if(req.receipt&&req.receipt.startsWith('data:')){
+    rc.innerHTML+=`<img src="${req.receipt}" class="receipt-img" alt="Receipt">`;
+  } else if(req.receipt){
+    rc.innerHTML+=`<div style="background:var(--bg3);padding:12px;border-radius:8px;font-size:12px;word-break:break-all">${req.receipt}</div>`;
+  } else {
+    rc.innerHTML+='<div style="color:var(--muted)">No receipt attached</div>';
+  }
+  document.getElementById('receipt-modal').classList.add('show');
+}
+
+// ── DEPOSITS / WITHDRAWALS ──
+async function loadTransactions(){
+  const [data,users]=await Promise.all([api('GET','/admin/transactions'),api('GET','/admin/users')]);
+  const txs=data.transactions||[];
+  const umap={};(users.users||[]).forEach(u=>umap[u.id]=u.username);
+  const deps=txs.filter(t=>t.type==='deposit'||t.type==='bonus');
+  const wds=txs.filter(t=>t.type==='withdraw');
+  const depRows=deps.map(t=>`<tr><td>${t.id}</td><td>${umap[t.userId]||t.username||'?'}</td><td style="color:var(--green);font-weight:700">${fmt(t.amount)}</td><td>${t.type}</td><td>${t.method||'—'}</td><td>${ago(t.createdAt)}</td></tr>`).join('');
+  document.getElementById('deposits-table').innerHTML=`<table><thead><tr><th>ID</th><th>User</th><th>Amount</th><th>Type</th><th>Method</th><th>When</th></tr></thead><tbody>${depRows||'<tr><td colspan="6" class="er">No deposits</td></tr>'}</tbody></table>`;
+  const wdRows=wds.map(t=>`<tr><td>${t.id}</td><td>${umap[t.userId]||t.username||'?'}</td><td style="color:var(--red);font-weight:700">${fmt(t.amount)}</td><td>${t.method||'—'}</td><td>${ago(t.createdAt)}</td><td><span class="st ${t.status}">${t.status}</span></td></tr>`).join('');
+  document.getElementById('withdrawals-table').innerHTML=`<table><thead><tr><th>ID</th><th>User</th><th>Amount</th><th>Method</th><th>When</th><th>Status</th></tr></thead><tbody>${wdRows||'<tr><td colspan="6" class="er">No withdrawals</td></tr>'}</tbody></table>`;
+}
+
+async function loadBets(){
+  const [data,users]=await Promise.all([api('GET','/admin/bets'),api('GET','/admin/users')]);
+  const bets=(data.bets||[]).slice(0,100);
+  const umap={};(users.users||[]).forEach(u=>umap[u.id]=u.username);
+  const rows=bets.map(b=>`<tr><td>${b.id}</td><td>${umap[b.userId]||b.username||'?'}</td><td>${b.game}</td><td>${fmt(b.betAmount)}</td><td style="color:${b.win?'var(--green)':'var(--red)'};font-weight:700">${b.win?'+'+fmt(b.payout):'-'+fmt(b.betAmount)}</td><td>${b.detail}</td><td>${ago(b.createdAt)}</td></tr>`).join('');
+  document.getElementById('bets-table').innerHTML=`<table><thead><tr><th>ID</th><th>User</th><th>Game</th><th>Bet</th><th>Result</th><th>Detail</th><th>When</th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="er">No bets</td></tr>'}</tbody></table>`;
+}
+
+// ── BONUSES ──
+async function giveBonus(){
+  const u=document.getElementById('bu').value.trim(),a=parseFloat(document.getElementById('ba').value),r=document.getElementById('br').value,t=document.getElementById('bt').value;
+  if(!u||!a)return notif('Fill username and amount','error');
+  const d=await api('POST','/admin/give-bonus',{username:u,amount:a,reason:r,bonusType:t});
+  if(d.error)return notif(d.error,'error');
+  notif(`🎁 $${a} given to ${u}!`,'gold');loadUsers();
+}
+async function giveBonusAll(){
+  const a=parseFloat(document.getElementById('baa').value),r=document.getElementById('bar').value;
+  if(!a)return notif('Enter amount','error');
+  if(!confirm(`Give $${a} to ALL users?`))return;
+  const d=await api('POST','/admin/give-bonus-all',{amount:a,reason:r});
+  notif(`🎁 Bonus given to ${d.count} users!`,'gold');loadUsers();
+}
+async function qgb(username){
+  const a=prompt(`Quick bonus to ${username} ($):`,'50');if(!a)return;
+  await api('POST','/admin/give-bonus',{username,amount:parseFloat(a),reason:'Admin bonus',bonusType:'manual'});
+  notif(`🎁 $${a} → ${username}`,'gold');loadUsers();
+}
+function qb(amount,reason){
+  const u=document.getElementById('qbu').value.trim();
+  if(!u)return notif('Enter username below','error');
+  api('POST','/admin/give-bonus',{username:u,amount,reason,bonusType:'manual'}).then(d=>{
+    if(d.error)return notif(d.error,'error');
+    notif(`🎁 $${amount} → ${u}`,'gold');loadUsers();
+  });
+}
+
+// ── PROMOS ──
+async function createPromo(){
+  const code=document.getElementById('pc').value.trim().toUpperCase(),amount=parseFloat(document.getElementById('pa').value),maxUses=parseInt(document.getElementById('pu').value)||999,expiresAt=document.getElementById('pe').value||null;
+  if(!code||!amount)return notif('Enter code and amount','error');
+  const d=await api('POST','/admin/create-promo',{code,amount,maxUses,expiresAt});
+  if(d.error)return notif(d.error,'error');
+  notif(`🎟️ ${code} created!`);loadPromos();document.getElementById('pc').value='';
+}
+async function loadPromos(){
+  const d=await api('GET','/admin/promos');
+  const rows=(d.promos||[]).map(p=>`<tr><td><code style="color:var(--a2);font-size:11px">${p.code}</code></td><td style="color:var(--gold);font-weight:700">${fmt(p.amount)}</td><td>${p.usedCount}/${p.maxUses}</td><td>${p.expiresAt?fmtD(p.expiresAt):'Never'}</td><td><span class="st ${p.active?'active':'rejected'}">${p.active?'✅ Active':'❌ Off'}</span></td><td><button class="btn ${p.active?'bd':'bs'}" style="font-size:10px;padding:3px 7px" onclick="togglePromo('${p.code}')">${p.active?'Disable':'Enable'}</button></td></tr>`).join('');
+  document.getElementById('promos-table').innerHTML=`<table><thead><tr><th>Code</th><th>Bonus</th><th>Uses</th><th>Expires</th><th>Status</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="er">No promos</td></tr>'}</tbody></table>`;
+}
+async function togglePromo(code){await api('POST','/admin/toggle-promo',{code});notif('🎟️ Toggled');loadPromos();}
+
+// ── CHAT ──
+let chatUsers=[];
+async function loadChats(){
+  const d=await api('GET','/admin/chats');
+  chatUsers=d.chats||[];
+  const unread=chatUsers.filter(c=>c.messages&&c.messages.some(m=>m.from==='user'&&!m.read)).length;
+  document.getElementById('chatb').textContent=unread||0;
+  if(!chatUsers.length){document.getElementById('chat-users').innerHTML='<div style="padding:14px;color:var(--muted);font-size:12px">No chats yet</div>';return;}
+  document.getElementById('chat-users').innerHTML=chatUsers.map(c=>{
+    const last=c.messages[c.messages.length-1];
+    const hasUnread=c.messages.some(m=>m.from==='user'&&!m.read);
+    return`<div style="padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s" onclick="openChat('${c.userId}','${c.username}')" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      <div style="font-weight:600;font-size:12px;display:flex;align-items:center;gap:5px">${hasUnread?'<div style="width:7px;height:7px;border-radius:50%;background:var(--red)"></div>':''}${c.username}</div>
+      <div style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${last?last.text:'No messages'}</div>
+    </div>`;
+  }).join('');
+  if(currentChat)openChat(currentChat,null,true);
+}
+async function openChat(userId,username,silent=false){
+  currentChat=userId;
+  if(username)document.getElementById('chat-hdr').textContent='💬 '+username;
+  await api('POST','/admin/mark-read',{userId});
+  const d=await api('GET','/admin/chats');
+  const chat=(d.chats||[]).find(c=>c.userId===userId);
+  if(!chat)return;
+  const msgs=chat.messages||[];
+  const el=document.getElementById('chat-msgs');
+  el.innerHTML=msgs.length?msgs.map(m=>{
+    const imgHtml = m.image ? `<br><img src="${m.image}" style="max-width:200px;max-height:150px;border-radius:8px;margin-top:6px;cursor:pointer;border:1px solid var(--border)" onclick="window.open(this.src)" alt="image">` : '';
+    return `<div style="max-width:80%;padding:8px 12px;border-radius:10px;font-size:12px;line-height:1.5;${m.from==='user'?'background:var(--bg3);border:1px solid var(--border);align-self:flex-start':'background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);align-self:flex-end'}">${m.text?`<div>${m.text}</div>`:''}${imgHtml}<div style="font-size:10px;color:var(--muted);margin-top:2px">${m.from==='user'?'👤 Customer':'🛡️ Admin'} · ${fmtD(m.time)}</div></div>`;
+  }).join(''):'<div style="margin:auto;color:var(--muted);font-size:12px">No messages</div>';
+  el.scrollTop=el.scrollHeight;
+  if(!silent)loadChats();
+}
+async function sendMsg(){
+  if(!currentChat)return notif('Select a chat','error');
+  const input=document.getElementById('chat-in');
+  const text=input.value.trim();if(!text)return;
+  await api('POST','/admin/send-message',{userId:currentChat,text});
+  input.value='';openChat(currentChat,null,true);
+}
+async function chatBonus(){
+  if(!currentChat)return;
+  const user=chatUsers.find(c=>c.userId===currentChat);if(!user)return;
+  const a=prompt(`Give bonus to ${user.username} ($):`,'50');if(!a)return;
+  await api('POST','/admin/give-bonus',{username:user.username,amount:parseFloat(a),reason:'Support bonus',bonusType:'manual'});
+  await api('POST','/admin/send-message',{userId:currentChat,text:`🎁 We've added $${a} bonus to your account!`});
+  notif(`🎁 $${a} → ${user.username}`,'gold');
+  openChat(currentChat,null,true);
+}
+
+// ── ANNOUNCEMENTS ──
+async function postAnn(){
+  const t=document.getElementById('ant').value.trim(),b=document.getElementById('anb').value.trim(),type=document.getElementById('antype').value;
+  if(!t||!b)return notif('Fill title and message','error');
+  await api('POST','/admin/announcement',{title:t,body:b,type});
+  notif('📢 Posted!');document.getElementById('ant').value='';document.getElementById('anb').value='';loadAnn();
+}
+async function loadAnn(){
+  const d=await api('GET','/admin/announcements');
+  const anns=d.announcements||[];
+  document.getElementById('ann-list').innerHTML=anns.length?`<table><thead><tr><th>Title</th><th>Message</th><th>Type</th><th>Posted</th></tr></thead><tbody>${anns.map(a=>`<tr><td><strong>${a.title}</strong></td><td>${a.body}</td><td>${a.type}</td><td>${ago(a.createdAt)}</td></tr>`).join('')}</tbody></table>`:'<div class="er">No announcements</div>';
+}
+
+// ── GAME CONFIG ──
+async function loadGameConfig(){
+  const d=await api('GET','/admin/game-config');
+  const c=d.config||{};
+  ['dice','mines','slots','coin'].forEach(g=>{
+    const gc=c[g]||{};
+    if(gc.rtp){document.getElementById(g+'-rtp').value=gc.rtp;rv(g+'-rtp-v',gc.rtp+'%');}
+    if(gc.minBet)document.getElementById(g+'-min').value=gc.minBet;
+    if(gc.maxBet)document.getElementById(g+'-max').value=gc.maxBet;
+    if(gc.enabled!==undefined)document.getElementById(g+'-en').checked=gc.enabled;
+  });
+  const gl=c.global||{};
+  if(gl.startBalance)document.getElementById('g-start').value=gl.startBalance;
+  if(gl.maxWin)document.getElementById('g-maxwin').value=gl.maxWin;
+  if(gl.maintenance!==undefined)document.getElementById('g-maint').checked=gl.maintenance;
+  if(gl.allowReg!==undefined)document.getElementById('g-reg').checked=gl.allowReg;
+  if(gl.autoBonus!==undefined)document.getElementById('g-ab').checked=gl.autoBonus;
+  if(gl.autoBonusAmount)document.getElementById('g-aba').value=gl.autoBonusAmount;
+}
+async function saveGC(game){
+  const config={rtp:parseInt(document.getElementById(game+'-rtp').value),minBet:parseFloat(document.getElementById(game+'-min').value),maxBet:parseFloat(document.getElementById(game+'-max').value),enabled:document.getElementById(game+'-en').checked};
+  await api('POST','/admin/game-config',{game,config});notif(`✅ ${game} saved! RTP: ${config.rtp}%`);
+}
+async function saveGlobal(){
+  const config={startBalance:parseFloat(document.getElementById('g-start').value),maxWin:parseFloat(document.getElementById('g-maxwin').value),maintenance:document.getElementById('g-maint').checked,allowReg:document.getElementById('g-reg').checked,autoBonus:document.getElementById('g-ab').checked,autoBonusAmount:parseFloat(document.getElementById('g-aba').value)};
+  await api('POST','/admin/global-config',{config});notif('✅ Global saved!');
+}
+
+// ── GAME MANAGER ──
+async function loadGames(){
+  const d=await api('GET','/admin/games');
+  const games=d.games||{casino:[],slots:[],sports:[],quickgames:[]};
+  ['casino','slots','sports','quickgames'].forEach(cat=>{
+    const el=document.getElementById('games-'+cat);
+    const gs=games[cat]||[];
+    el.innerHTML=gs.length?gs.map(g=>`
+      <div class="game-card-admin" style="margin-bottom:8px">
+        <div class="img-preview">${g.thumbnail.startsWith('http')?`<img src="${g.thumbnail}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`:`<span>${g.thumbnail}</span>`}</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:12px">${g.name}</div>
+          <div style="font-size:10px;color:var(--muted)">RTP: ${g.rtp}% | $${g.minBet}-$${g.maxBet}</div>
+          <span class="st ${g.enabled?'active':'rejected'}" style="margin-top:3px">${g.enabled?'✅ On':'❌ Off'}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <button class="btn ${g.enabled?'bd':'bs'}" style="font-size:10px;padding:3px 7px" onclick="toggleGame('${cat}','${g.id}',${g.enabled})">${g.enabled?'Disable':'Enable'}</button>
+          <button class="btn bd" style="font-size:10px;padding:3px 7px" onclick="deleteGame('${cat}','${g.id}')">Delete</button>
+        </div>
+      </div>`).join(''):'<div style="font-size:11px;color:var(--muted);padding:8px">No games yet</div>';
+  });
+}
+async function addGame(){
+  const cat=document.getElementById('gm-cat').value,name=document.getElementById('gm-name').value.trim(),thumb=document.getElementById('gm-thumb').value.trim()||'🎮',desc=document.getElementById('gm-desc').value.trim(),rtp=parseInt(document.getElementById('gm-rtp').value),minBet=parseFloat(document.getElementById('gm-min').value),maxBet=parseFloat(document.getElementById('gm-max').value);
+  if(!name)return notif('Enter game name','error');
+  await api('POST','/admin/games/add',{category:cat,name,thumbnail:thumb,description:desc,rtp,minBet,maxBet,enabled:true});
+  notif(`🎮 ${name} added to ${cat}!`);loadGames();document.getElementById('gm-name').value='';
+}
+async function toggleGame(cat,id,enabled){
+  await api('POST','/admin/games/update',{category:cat,gameId:id,updates:{enabled:!enabled}});
+  loadGames();
+}
+async function deleteGame(cat,id){
+  if(!confirm('Delete this game?'))return;
+  await api('POST','/admin/games/delete',{category:cat,gameId:id});
+  notif('🗑️ Deleted');loadGames();
+}
+
+// ── SITE EDITOR ──
+async function loadSiteConfig(){
+  const d=await api('GET','/admin/site-config');
+  const c=d.config||{};
+  const setv=(id,v)=>{const el=document.getElementById(id);if(el&&v!==undefined)el.value=v;};
+  setv('s-name',c.siteName);setv('s-tag',c.tagline);setv('s-wel',c.welcome);setv('s-sub',c.subtext);
+  setv('c-acc',c.accentColor);setv('c-acc-h',c.accentColor);
+  setv('c-bg',c.bgColor);setv('c-bg-h',c.bgColor);
+  setv('c-bg2',c.bg2Color);setv('c-bg2-h',c.bg2Color);
+  if(c.banner){const b=document.getElementById('ban-en');if(b)b.checked=c.banner.enabled||false;setv('ban-txt',c.banner.text);setv('ban-type',c.banner.type);}
+  if(c.customCSS)setv('custom-css',c.customCSS);
+  if(c.texts){const t=c.texts;setv('t-dice',t.diceName);setv('t-dice-d',t.diceDesc);setv('t-mines',t.minesName);setv('t-mines-d',t.minesDesc);setv('t-slots',t.slotsName);setv('t-slots-d',t.slotsDesc);setv('t-coin',t.coinName);setv('t-coin-d',t.coinDesc);}
+}
+async function saveSC(){
+  await api('POST','/admin/site-config',{config:{siteName:document.getElementById('s-name').value,tagline:document.getElementById('s-tag').value,welcome:document.getElementById('s-wel').value,subtext:document.getElementById('s-sub').value}});
+  notif('✅ Branding saved!');
+}
+async function saveColors(){
+  await api('POST','/admin/site-config',{config:{accentColor:document.getElementById('c-acc').value,bgColor:document.getElementById('c-bg').value,bg2Color:document.getElementById('c-bg2').value}});
+  notif('🎨 Colors saved!');
+}
+async function saveBanner(){
+  await api('POST','/admin/site-config',{config:{banner:{enabled:document.getElementById('ban-en').checked,text:document.getElementById('ban-txt').value,type:document.getElementById('ban-type').value}}});
+  notif('📢 Banner saved!');
+}
+async function saveCSS(){
+  await api('POST','/admin/site-config',{config:{customCSS:document.getElementById('custom-css').value}});
+  notif('💉 CSS injected!');
+}
+async function saveTexts(){
+  const texts={diceName:document.getElementById('t-dice').value,diceDesc:document.getElementById('t-dice-d').value,minesName:document.getElementById('t-mines').value,minesDesc:document.getElementById('t-mines-d').value,slotsName:document.getElementById('t-slots').value,slotsDesc:document.getElementById('t-slots-d').value,coinName:document.getElementById('t-coin').value,coinDesc:document.getElementById('t-coin-d').value};
+  await api('POST','/admin/site-config',{config:{texts}});
+  notif('✅ Text saved!');
+}
+
+// ── DEPOSIT INSTRUCTIONS ──
+async function loadDI(){
+  const d=await api('GET','/admin/deposit-instructions');
+  const di=d.instructions||{};
+  const setv=(id,v)=>{const el=document.getElementById(id);if(el&&v)el.value=v;};
+  setv('di-card',di.cardInstructions);setv('di-coin',di.cryptoCoin);setv('di-addr',di.cryptoAddress);
+  setv('di-bank',di.bankName);setv('di-acc',di.bankAcc);setv('di-holder',di.bankHolder);setv('di-bsb',di.bankBSB);
+  setv('di-ew-prov',di.ewalletProvider);setv('di-ew-acc',di.ewalletAcc);
+}
+async function saveDI(){
+  const instructions={cardInstructions:document.getElementById('di-card').value,cryptoCoin:document.getElementById('di-coin').value,cryptoAddress:document.getElementById('di-addr').value,bankName:document.getElementById('di-bank').value,bankAcc:document.getElementById('di-acc').value,bankHolder:document.getElementById('di-holder').value,bankBSB:document.getElementById('di-bsb').value,ewalletProvider:document.getElementById('di-ew-prov').value,ewalletAcc:document.getElementById('di-ew-acc').value};
+  await api('POST','/admin/deposit-instructions',{instructions});
+  notif('📋 Deposit instructions saved!');
+}
+
+// ── WITHDRAWAL FORM ──
+let wdFields=[];
+async function loadWDForm(){
+  const d=await api('GET','/withdrawal-form');
+  wdFields=d.fields||[];
+  renderWDFields();
+}
+function renderWDFields(){
+  const el=document.getElementById('wd-form-fields');
+  el.innerHTML=wdFields.map((f,i)=>`
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:center">
+      <div style="flex:1">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:center">
+          <input type="text" value="${f.label}" placeholder="Label" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;outline:none" oninput="wdFields[${i}].label=this.value">
+          <input type="text" value="${f.placeholder||''}" placeholder="Placeholder" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;outline:none" oninput="wdFields[${i}].placeholder=this.value">
+          <select style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 8px;font-size:12px;outline:none" onchange="wdFields[${i}].type=this.value">
+            <option ${f.type==='text'?'selected':''} value="text">Text</option>
+            <option ${f.type==='number'?'selected':''} value="number">Number</option>
+            <option ${f.type==='textarea'?'selected':''} value="textarea">Textarea</option>
+          </select>
+          <label style="font-size:11px;display:flex;align-items:center;gap:4px"><input type="checkbox" ${f.required?'checked':''} onchange="wdFields[${i}].required=this.checked"> Required</label>
+        </div>
+      </div>
+      <button class="btn bd" style="font-size:10px;padding:3px 7px" onclick="wdFields.splice(${i},1);renderWDFields()">✕</button>
+    </div>`).join('')+'<button class="btn bs" style="font-size:11px" onclick="wdFields.push({id:\'f\'+Date.now(),label:\'New Field\',type:\'text\',placeholder:\'\',required:false});renderWDFields()">➕ Add Field</button>';
+}
+async function saveWDForm(){
+  await api('POST','/admin/withdrawal-form',{fields:wdFields});
+  notif('📝 Withdrawal form saved!');
+}
+
+// ── THEMES ──
+const THEMES=[
+  {name:'🟢 Classic Green',accent:'#00e701',bg:'#0f1923',bg2:'#1a2634'},
+  {name:'🔵 Ocean Blue',accent:'#3b82f6',bg:'#0a0f1e',bg2:'#0f172a'},
+  {name:'🟣 Purple',accent:'#a855f7',bg:'#0f0a1e',bg2:'#1a0f2e'},
+  {name:'🔴 Red Hot',accent:'#ef4444',bg:'#1a0a0a',bg2:'#2d1111'},
+  {name:'🟡 Golden',accent:'#f59e0b',bg:'#1a1000',bg2:'#2d1c00'},
+  {name:'🌸 Pink',accent:'#ec4899',bg:'#1a0a12',bg2:'#2d1120'},
+];
+function renderThemes(){
+  document.getElementById('themes-grid').innerHTML=THEMES.map((t,i)=>`
+    <div style="background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;text-align:center;transition:all .15s" onclick="applyTheme(${i})" onmouseover="this.style.borderColor='${t.accent}'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="height:50px;border-radius:8px;margin-bottom:8px;background:linear-gradient(135deg,${t.bg},${t.bg2});border:2px solid ${t.accent}"></div>
+      <div style="font-size:12px;font-weight:600">${t.name}</div>
+    </div>`).join('');
+}
+async function applyTheme(i){
+  const t=THEMES[i];
+  await api('POST','/admin/site-config',{config:{accentColor:t.accent,bgColor:t.bg,bg2Color:t.bg2}});
+  document.getElementById('c-acc').value=t.accent;document.getElementById('c-acc-h').value=t.accent;
+  document.getElementById('c-bg').value=t.bg;document.getElementById('c-bg-h').value=t.bg;
+  notif(`🎨 Theme "${t.name}" applied!`);
+}
+
+// ══════════════════════════════════════════
+//  PROMOTIONS EDITOR
+// ══════════════════════════════════════════
+let promoData = {};
+
+async function loadPromotionsEditor() {
+  const d = await api('GET','/admin/promotions');
+  promoData = d.promotions || {};
+  const banner = promoData.heroBanner || {};
+  const setv = (id,v) => { const el=document.getElementById(id); if(el&&v!==undefined) el.value=v; };
+  setv('pb-title', banner.title);
+  setv('pb-sub', banner.subtitle);
+  setv('pb-img', banner.image);
+  const en = document.getElementById('pb-en'); if(en) en.checked = banner.enabled !== false;
+  renderBonusList('dep', promoData.depositBonuses||[]);
+  renderBonusList('nodep', promoData.noDepositBonuses||[]);
+}
+
+function renderBonusList(prefix, bonuses) {
+  const el = document.getElementById(prefix+'-bonuses-list');
+  if (!el) return;
+  el.innerHTML = bonuses.map(b => `
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:12px">${b.title}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${b.code?'Code: '+b.code:''} ${b.bonusPercent?b.bonusPercent+'% match':''} ${b.amount?'$'+b.amount+' free':''}</div>
+      </div>
+      <span class="st ${b.active?'active':'rejected'}">${b.active?'ON':'OFF'}</span>
+      <button class="btn ${b.active?'bd':'bs'}" style="font-size:10px;padding:3px 7px" onclick="toggleBonus('${prefix==='dep'?'deposit':'nodeposit'}','${b.id}')">${b.active?'Off':'On'}</button>
+      <button class="btn bd" style="font-size:10px;padding:3px 7px" onclick="deleteBonus('${prefix==='dep'?'deposit':'nodeposit'}','${b.id}')">🗑️</button>
+    </div>`).join('') || '<div style="font-size:11px;color:var(--muted);padding:8px">No bonuses yet</div>';
+}
+
+async function savePromoBanner() {
+  const banner = { title:document.getElementById('pb-title').value, subtitle:document.getElementById('pb-sub').value, image:document.getElementById('pb-img').value, enabled:document.getElementById('pb-en').checked };
+  await api('POST','/admin/promotions',{promotions:{heroBanner:banner}});
+  notif('🏔️ Banner saved!');
+}
+
+async function addBonus(type) {
+  const isDeposit = type === 'deposit';
+  const prefix = isDeposit ? 'dep' : 'nodep';
+  const bonus = {
+    title: document.getElementById(prefix+'-b-title').value.trim(),
+    description: document.getElementById(prefix+'-b-desc').value.trim(),
+    image: document.getElementById(prefix+'-b-img').value.trim(),
+    badge: document.getElementById(prefix+'-b-badge').value.trim(),
+    badgeColor: document.getElementById(prefix+'-b-color').value,
+    code: document.getElementById(prefix+'-b-code').value.trim().toUpperCase(),
+    type,
+  };
+  if (isDeposit) {
+    bonus.bonusPercent = parseInt(document.getElementById('dep-b-pct').value);
+    bonus.minDeposit = parseInt(document.getElementById('dep-b-min').value);
+    bonus.maxBonus = parseInt(document.getElementById('dep-b-max').value);
+  } else {
+    bonus.amount = parseInt(document.getElementById('nodep-b-amt').value);
+  }
+  if (!bonus.title) return notif('Enter a title','error');
+  await api('POST','/admin/promotions/add',{bonus});
+  notif(`🎁 Bonus added!`);
+  loadPromotionsEditor();
+}
+
+async function toggleBonus(type, id) {
+  const arr = type==='deposit' ? promoData.depositBonuses : promoData.noDepositBonuses;
+  const b = arr.find(x=>x.id===id);
+  if (!b) return;
+  await api('POST','/admin/promotions/update',{id,type,updates:{active:!b.active}});
+  loadPromotionsEditor();
+}
+
+async function deleteBonus(type, id) {
+  if (!confirm('Delete this bonus?')) return;
+  await api('POST','/admin/promotions/delete',{id,type});
+  notif('🗑️ Deleted'); loadPromotionsEditor();
+}
+
+// ══════════════════════════════════════════
+//  ABOUT US EDITOR
+// ══════════════════════════════════════════
+let aboutData = {};
+let aboutStats = [], aboutFeatures = [], aboutTeam = [];
+
+async function loadAboutEditor() {
+  const d = await api('GET','/admin/about');
+  aboutData = d.about || {};
+  const setv = (id,v) => { const el=document.getElementById(id); if(el&&v!==undefined) el.value=v; };
+  setv('ab-title', aboutData.title);
+  setv('ab-sub', aboutData.subtitle);
+  setv('ab-heroimg', aboutData.heroImage);
+  setv('ab-desc', aboutData.description);
+  setv('ab-mission', aboutData.mission);
+  setv('ab-email', aboutData.contactEmail);
+  setv('ab-phone', aboutData.contactPhone);
+  setv('ab-addr', aboutData.address);
+  setv('ab-license', aboutData.licenseText);
+  aboutStats = aboutData.stats || [];
+  aboutFeatures = aboutData.features || [];
+  aboutTeam = aboutData.team || [];
+  renderAboutStats();
+  renderAboutFeatures();
+  renderAboutTeam();
+}
+
+function renderAboutStats() {
+  const el = document.getElementById('ab-stats-editor');
+  if (!el) return;
+  el.innerHTML = aboutStats.map((s,i) => `
+    <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:6px;align-items:center;margin-bottom:6px">
+      <input type="text" value="${s.icon}" placeholder="Icon" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 8px;font-size:13px;outline:none" oninput="aboutStats[${i}].icon=this.value">
+      <input type="text" value="${s.value}" placeholder="Value" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 8px;font-size:13px;outline:none" oninput="aboutStats[${i}].value=this.value">
+      <input type="text" value="${s.label}" placeholder="Label" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 8px;font-size:13px;outline:none" oninput="aboutStats[${i}].label=this.value">
+      <button class="btn bd" style="font-size:10px;padding:3px 6px" onclick="aboutStats.splice(${i},1);renderAboutStats()">✕</button>
+    </div>`).join('');
+}
+
+function addStat() { aboutStats.push({icon:'⭐',value:'0',label:'New Stat'}); renderAboutStats(); }
+
+function renderAboutFeatures() {
+  const el = document.getElementById('ab-features-editor');
+  if (!el) return;
+  el.innerHTML = aboutFeatures.map((f,i) => `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;position:relative">
+      <button class="btn bd" style="position:absolute;top:6px;right:6px;font-size:10px;padding:2px 5px" onclick="aboutFeatures.splice(${i},1);renderAboutFeatures()">✕</button>
+      <input type="text" value="${f.icon}" placeholder="Icon" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:5px;font-size:16px;outline:none;margin-bottom:5px;text-align:center" oninput="aboutFeatures[${i}].icon=this.value">
+      <input type="text" value="${f.title}" placeholder="Title" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:5px;font-size:12px;outline:none;margin-bottom:5px" oninput="aboutFeatures[${i}].title=this.value">
+      <textarea style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:5px;font-size:11px;outline:none;resize:none;min-height:50px" oninput="aboutFeatures[${i}].description=this.value">${f.description}</textarea>
+    </div>`).join('');
+}
+
+function addFeature() { aboutFeatures.push({icon:'⭐',title:'New Feature',description:'Description'}); renderAboutFeatures(); }
+
+function renderAboutTeam() {
+  const el = document.getElementById('ab-team-editor');
+  if (!el) return;
+  el.innerHTML = aboutTeam.map((t,i) => `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;position:relative">
+      <button class="btn bd" style="position:absolute;top:6px;right:6px;font-size:10px;padding:2px 5px" onclick="aboutTeam.splice(${i},1);renderAboutTeam()">✕</button>
+      <input type="text" value="${t.name}" placeholder="Name" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:5px;font-size:12px;outline:none;margin-bottom:5px" oninput="aboutTeam[${i}].name=this.value">
+      <input type="text" value="${t.role}" placeholder="Role" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:5px;font-size:12px;outline:none;margin-bottom:5px" oninput="aboutTeam[${i}].role=this.value">
+      <input type="text" value="${t.image||''}" placeholder="Photo URL" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:5px;font-size:11px;outline:none;margin-bottom:5px" oninput="aboutTeam[${i}].image=this.value">
+      <textarea style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:5px;font-size:11px;outline:none;resize:none;min-height:50px" oninput="aboutTeam[${i}].bio=this.value">${t.bio}</textarea>
+    </div>`).join('');
+}
+
+function addTeamMember() { aboutTeam.push({name:'New Member',role:'Role',image:'',bio:'Bio here'}); renderAboutTeam(); }
+
+async function saveAbout() {
+  const about = {
+    title: document.getElementById('ab-title').value,
+    subtitle: document.getElementById('ab-sub').value,
+    heroImage: document.getElementById('ab-heroimg').value,
+    description: document.getElementById('ab-desc').value,
+    mission: document.getElementById('ab-mission').value,
+    contactEmail: document.getElementById('ab-email').value,
+    contactPhone: document.getElementById('ab-phone').value,
+    address: document.getElementById('ab-addr').value,
+    licenseText: document.getElementById('ab-license').value,
+    stats: aboutStats,
+    features: aboutFeatures,
+    team: aboutTeam,
+  };
+  await api('POST','/admin/about',{about});
+  notif('✅ About page saved!');
+}
+
+// ══════════════════════════════════════════
+//  CHAT WITH IMAGES (admin)
+// ══════════════════════════════════════════
+let adminChatImg = null;
+let adminChatImgName = null;
+
+async function sendMsg() {
+  if (!currentChat) return notif('Select a chat','error');
+  const input = document.getElementById('chat-in');
+  const text = input.value.trim();
+  if (!text && !adminChatImg) return;
+  await api('POST','/admin/send-message-media',{userId:currentChat,text,image:adminChatImg,imageName:adminChatImgName});
+  input.value='';
+  adminChatImg=null; adminChatImgName=null;
+  openChat(currentChat,null,true);
+}
+
+// ══════════════════════════════════════════
+//  IMAGE UPLOAD SYSTEM
+// ══════════════════════════════════════════
+const uploadedImages = {};
+
+function uploadImage(input, target) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { notif('Image too large! Max 2MB','error'); return; }
+  
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result;
+    uploadedImages[target] = base64;
+    
+    // Show preview
+    if (target === 'logo') {
+      const preview = document.getElementById('logo-preview');
+      if (preview) preview.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:contain">`;
+      document.getElementById('s-logo-url').value = '';
+    } else if (target === 'favicon') {
+      const preview = document.getElementById('favicon-preview');
+      if (preview) preview.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:contain;border-radius:4px">`;
+    } else if (target === 'heroImage') {
+      const preview = document.getElementById('hero-img-preview');
+      if (preview) preview.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover">`;
+      document.getElementById('s-hero-url').value = '';
+    } else if (target === 'aboutHero') {
+      const preview = document.getElementById('ab-hero-preview');
+      if (preview) preview.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover">`;
+    }
+    
+    // Auto-save to backend
+    const config = {};
+    config[target] = base64;
+    if (target === 'logo' || target === 'favicon' || target === 'heroImage') {
+      await api('POST','/admin/site-config',{config});
+    } else if (target === 'aboutHero') {
+      await api('POST','/admin/about',{about:{heroImage:base64}});
+    }
+    notif(`✅ ${target} uploaded and saved!`);
+  };
+  reader.readAsDataURL(file);
+}
+
+function previewLogoUrl(url) {
+  if (!url) return;
+  const preview = document.getElementById('logo-preview');
+  if (preview) preview.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:contain" onerror="this.parentElement.innerHTML='❌'">`;
+}
+
+// Override saveSC to include logo
+const _origSaveSC = saveSC;
+async function saveSC() {
+  const logoUrl = document.getElementById('s-logo-url').value.trim();
+  const heroUrl = document.getElementById('s-hero-url').value.trim();
+  const config = {
+    siteName: document.getElementById('s-name').value,
+    tagline: document.getElementById('s-tag').value,
+    welcome: document.getElementById('s-wel').value,
+    subtext: document.getElementById('s-sub').value,
+  };
+  if (logoUrl) config.logo = logoUrl;
+  if (heroUrl) config.heroImage = heroUrl;
+  if (uploadedImages.logo) config.logo = uploadedImages.logo;
+  if (uploadedImages.favicon) config.favicon = uploadedImages.favicon;
+  if (uploadedImages.heroImage) config.heroImage = uploadedImages.heroImage;
+  await api('POST','/admin/site-config',{config});
+  notif('✅ Branding saved!');
+}
+
+// Override saveColors to include hero image
+const _origSaveColors = saveColors;
+async function saveColors() {
+  const heroUrl = document.getElementById('s-hero-url')?.value?.trim();
+  const config = {
+    accentColor: document.getElementById('c-acc').value,
+    bgColor: document.getElementById('c-bg').value,
+    bg2Color: document.getElementById('c-bg2').value,
+  };
+  if (heroUrl) config.heroImage = heroUrl;
+  if (uploadedImages.heroImage) config.heroImage = uploadedImages.heroImage;
+  await api('POST','/admin/site-config',{config});
+  notif('🎨 Colors & images saved!');
+}
+
+// Patch loadSiteConfig to show saved images
+const _origLoadSC = loadSiteConfig;
+async function loadSiteConfig() {
+  await _origLoadSC();
+  const d = await api('GET','/admin/site-config');
+  const c = d.config||{};
+  if (c.logo) {
+    const preview = document.getElementById('logo-preview');
+    if (preview) preview.innerHTML = `<img src="${c.logo}" style="width:100%;height:100%;object-fit:contain">`;
+    const urlInput = document.getElementById('s-logo-url');
+    if (urlInput && c.logo.startsWith('http')) urlInput.value = c.logo;
+  }
+  if (c.favicon) {
+    const preview = document.getElementById('favicon-preview');
+    if (preview) preview.innerHTML = `<img src="${c.favicon}" style="width:100%;height:100%;object-fit:contain;border-radius:4px">`;
+  }
+  if (c.heroImage) {
+    const preview = document.getElementById('hero-img-preview');
+    if (preview) preview.innerHTML = `<img src="${c.heroImage}" style="width:100%;height:100%;object-fit:cover">`;
+    const urlInput = document.getElementById('s-hero-url');
+    if (urlInput && c.heroImage.startsWith('http')) urlInput.value = c.heroImage;
+  }
+}
+
+// Also add image upload to About editor
+const _origLoadAboutEditor = loadAboutEditor;
+async function loadAboutEditor() {
+  await _origLoadAboutEditor();
+  // Add hero image upload UI if not already there
+  const heroImgField = document.getElementById('ab-heroimg');
+  if (heroImgField && !document.getElementById('ab-hero-upload')) {
+    const wrapper = document.createElement('div');
+    wrapper.id = 'ab-hero-upload';
+    wrapper.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:6px';
+    wrapper.innerHTML = `
+      <div id="ab-hero-preview" style="width:80px;height:50px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px">🏠</div>
+      <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--bg3);border:2px dashed var(--border);border-radius:8px;padding:8px;cursor:pointer;font-size:11px;color:var(--muted)">
+        📁 Upload About Hero Image
+        <input type="file" accept="image/*" style="display:none" onchange="uploadImage(this,'aboutHero')">
+      </label>`;
+    heroImgField.parentElement.appendChild(wrapper);
+    if (aboutData.heroImage) {
+      const p = document.getElementById('ab-hero-preview');
+      if (p) p.innerHTML = `<img src="${aboutData.heroImage}" style="width:100%;height:100%;object-fit:cover">`;
+    }
+  }
+}
+
+// ── COLOR SYNC ──
+document.getElementById('c-acc').addEventListener('input',function(){document.getElementById('c-acc-h').value=this.value;});
+document.getElementById('c-bg').addEventListener('input',function(){document.getElementById('c-bg-h').value=this.value;});
+document.getElementById('c-bg2').addEventListener('input',function(){document.getElementById('c-bg2-h').value=this.value;});
+
+// ── INIT ──
+renderThemes();
+loadWDForm();
+document.getElementById('ak').focus();
+</script>
+</body>
+</html>
