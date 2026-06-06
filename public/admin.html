@@ -224,7 +224,7 @@ input:checked+.togs:before{transform:translateX(18px)}
 
       <!-- USERS -->
       <div class="tab" id="tab-users">
-        <div class="pt">👥 All Users</div>
+        <div class="pt">👥 All Users <button class="btn bp" style="font-size:12px;margin-left:12px" onclick="openAddUser()">➕ Add Customer</button></div>
         <div class="panel" style="margin-bottom:12px">
           <input type="text" id="usearch" placeholder="🔍 Search username, email, or Player ID..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 12px;font-size:12px;outline:none" oninput="filterUsers()">
         </div>
@@ -669,6 +669,35 @@ input:checked+.togs:before{transform:translateX(18px)}
 
 <div id="notif"></div>
 
+<!-- ADD USER MODAL -->
+<div class="modal" id="add-user-modal">
+  <div class="modal-box" style="max-width:500px">
+    <button class="modal-close" onclick="closeModal('add-user-modal')">✕</button>
+    <h3>➕ Add New Customer</h3>
+    <div class="fr">
+      <div class="f"><label>First Name *</label><input type="text" id="au-fn" placeholder="John"></div>
+      <div class="f"><label>Last Name *</label><input type="text" id="au-ln" placeholder="Smith"></div>
+    </div>
+    <div class="f"><label>Username *</label><input type="text" id="au-username" placeholder="johnsmith123"></div>
+    <div class="f"><label>Email *</label><input type="email" id="au-email" placeholder="john@email.com"></div>
+    <div class="f"><label>Password *</label><input type="password" id="au-password" placeholder="Min 6 characters"></div>
+    <div class="f"><label>Phone (Australian)</label><input type="text" id="au-phone" placeholder="0412 345 678"></div>
+    <div class="f"><label>Starting Balance ($)</label><input type="number" id="au-balance" value="1000"></div>
+    <div style="height:1px;background:var(--border);margin:10px 0"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px">🏦 BANK DETAILS (optional)</div>
+    <div class="fr">
+      <div class="f"><label>Bank Name</label><input type="text" id="au-bank" placeholder="ANZ"></div>
+      <div class="f"><label>Account Number</label><input type="text" id="au-acc" placeholder="123456789"></div>
+    </div>
+    <div class="fr">
+      <div class="f"><label>BSB</label><input type="text" id="au-bsb" placeholder="062-000"></div>
+      <div class="f"><label>Account Holder</label><input type="text" id="au-holder" placeholder="John Smith"></div>
+    </div>
+    <div id="au-error" style="color:var(--red);font-size:12px;margin-top:8px;display:none"></div>
+    <button class="btn bp" style="width:100%;margin-top:14px;padding:12px;font-size:14px" onclick="addCustomer()">➕ Create Customer Account</button>
+  </div>
+</div>
+
 <script>
 const API='http://localhost:3001/api', AK='ausgg_admin_2024';
 let allUsers=[], allReqs=[], currentChat=null, refreshInt=null, countdown=10;
@@ -798,35 +827,64 @@ async function openUser(userId){
   const data=await api('GET','/admin/user-detail/'+userId);
   const u=data.user||{},bets=data.bets||[],txs=data.transactions||[];
   document.getElementById('um-title').textContent=`👤 ${u.username} — ${u.playerId||'No ID'}`;
+  const bi = u.bankInfo || {};
   document.getElementById('um-profile').innerHTML=`
-    <div class="g2">
-      <div><div class="sl">Player ID</div><code style="font-size:16px;font-weight:700;color:var(--a2)">${u.playerId||'—'}</code></div>
-      <div><div class="sl">Balance</div><div style="font-size:20px;font-weight:700;color:var(--green)">${fmt(u.balance)}</div></div>
-      <div><div class="sl">Email</div><div>${u.email}</div><div style="font-size:10px;color:var(--muted)">${u.emailVerified?'✅ Verified':'⏳ Not verified'}</div></div>
-      <div><div class="sl">Status</div><span class="st ${u.banned?'rejected':'approved'}">${u.banned?'🚫 Banned':'✅ Active'}</span></div>
-      <div><div class="sl">Total Bets</div><div style="font-weight:700">${u.totalBets||0}</div></div>
-      <div><div class="sl">Total Won</div><div style="color:var(--green);font-weight:700">${fmt(u.totalWon)}</div></div>
-      <div><div class="sl">Total Lost</div><div style="color:var(--red);font-weight:700">${fmt(u.totalLost)}</div></div>
-      <div><div class="sl">Joined</div><div>${fmtD(u.createdAt)}</div></div>
-      <div><div class="sl">Last Login</div><div>${fmtD(u.lastLogin)}</div></div>
-      <div><div class="sl">Bank Info</div><div style="font-size:11px">${u.bankInfo?JSON.stringify(u.bankInfo):'—'}</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="sc"><div class="sl">Player ID</div><code style="font-size:15px;font-weight:700;color:var(--a2)">${u.playerId||'—'}</code></div>
+      <div class="sc"><div class="sl">Balance</div><div style="font-size:18px;font-weight:700;color:var(--green)">${fmt(u.balance)}</div></div>
+      <div class="sc"><div class="sl">Status</div><span class="st ${u.banned?'rejected':'approved'}">${u.banned?'🚫 Banned':'✅ Active'}</span></div>
+      <div class="sc"><div class="sl">Total Bets</div><div style="font-weight:700">${u.totalBets||0}</div></div>
+      <div class="sc"><div class="sl">Total Won</div><div style="color:var(--green);font-weight:700">${fmt(u.totalWon)}</div></div>
+      <div class="sc"><div class="sl">Total Lost</div><div style="color:var(--red);font-weight:700">${fmt(u.totalLost)}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="panel" style="margin-bottom:0">
+        <h3 style="font-size:12px">👤 Personal Info</h3>
+        <div style="font-size:12px;display:grid;gap:6px">
+          <div><span style="color:var(--muted)">Full Name:</span> <strong>${(u.firstName||'') + ' ' + (u.lastName||'') || '—'}</strong></div>
+          <div><span style="color:var(--muted)">Username:</span> <strong>${u.username}</strong></div>
+          <div><span style="color:var(--muted)">Email:</span> <strong>${u.email}</strong> ${u.emailVerified?'✅':'⏳'}</div>
+          <div><span style="color:var(--muted)">Phone:</span> <strong>${u.phone||'—'}</strong></div>
+          <div><span style="color:var(--muted)">Joined:</span> ${fmtD(u.createdAt)}</div>
+          <div><span style="color:var(--muted)">Last Login:</span> ${fmtD(u.lastLogin)}</div>
+          <div><span style="color:var(--muted)">Notes:</span> ${u.notes||'—'}</div>
+        </div>
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <h3 style="font-size:12px">🏦 Bank Details</h3>
+        <div style="font-size:12px;display:grid;gap:6px">
+          <div><span style="color:var(--muted)">Bank Name:</span> <strong>${bi.bankName||'—'}</strong></div>
+          <div><span style="color:var(--muted)">Account Number:</span> <strong>${bi.accountNumber||'—'}</strong></div>
+          <div><span style="color:var(--muted)">BSB:</span> <strong>${bi.bsb||'—'}</strong></div>
+          <div><span style="color:var(--muted)">Account Holder:</span> <strong>${bi.accountHolder||bi.bankHolder||'—'}</strong></div>
+        </div>
+      </div>
     </div>`;
   const betRows=bets.slice(0,20).map(b=>`<tr><td>${b.game}</td><td>${fmt(b.betAmount)}</td><td style="color:${b.win?'var(--green)':'var(--red)'};font-weight:700">${b.win?'+'+fmt(b.payout):'-'+fmt(b.betAmount)}</td><td>${b.detail}</td><td>${ago(b.createdAt)}</td></tr>`).join('');
   document.getElementById('um-bets').innerHTML=`<table><thead><tr><th>Game</th><th>Bet</th><th>Result</th><th>Detail</th><th>When</th></tr></thead><tbody>${betRows||'<tr><td colspan="5" class="er">No bets</td></tr>'}</tbody></table>`;
   const txRows=txs.slice(0,20).map(t=>`<tr><td>${t.type}</td><td style="color:${t.type==='withdraw'?'var(--red)':'var(--green)'};font-weight:700">${fmt(t.amount)}</td><td>${t.method||'—'}</td><td><span class="st ${t.status}">${t.status}</span></td><td>${ago(t.createdAt)}</td></tr>`).join('');
   document.getElementById('um-transactions').innerHTML=`<table><thead><tr><th>Type</th><th>Amount</th><th>Method</th><th>Status</th><th>When</th></tr></thead><tbody>${txRows||'<tr><td colspan="5" class="er">No transactions</td></tr>'}</tbody></table>`;
+  const bi2 = u.bankInfo||{};
   document.getElementById('um-edit').innerHTML=`
-    <div class="g2">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="f"><label>First Name</label><input type="text" id="ue-fn" value="${u.firstName||''}"></div>
+      <div class="f"><label>Last Name</label><input type="text" id="ue-ln" value="${u.lastName||''}"></div>
+      <div class="f"><label>Phone</label><input type="text" id="ue-phone" value="${u.phone||''}"></div>
       <div class="f"><label>New Balance ($)</label><input type="number" id="ue-bal" value="${u.balance}"></div>
-      <div class="f"><label>New Password (leave blank to keep)</label><input type="password" id="ue-pass" placeholder="New password (min 6 chars)"></div>
-      <div class="f"><label>Bank Name</label><input type="text" id="ue-bank" value="${u.bankInfo?.bankName||''}"></div>
-      <div class="f"><label>Account Number</label><input type="text" id="ue-acc" value="${u.bankInfo?.accountNumber||''}"></div>
-      <div class="f"><label>BSB / Routing</label><input type="text" id="ue-bsb" value="${u.bankInfo?.bsb||''}"></div>
-      <div class="f"><label>Notes</label><input type="text" id="ue-notes" value="${u.notes||''}"></div>
+      <div class="f"><label>New Password (blank = keep current)</label><input type="password" id="ue-pass" placeholder="New password (min 6 chars)"></div>
+      <div class="f"><label>Notes (admin only)</label><input type="text" id="ue-notes" value="${u.notes||''}"></div>
+    </div>
+    <div style="height:1px;background:var(--border);margin:10px 0"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px">🏦 BANK DETAILS</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="f"><label>Bank Name</label><input type="text" id="ue-bank" value="${bi2.bankName||''}"></div>
+      <div class="f"><label>Account Number</label><input type="text" id="ue-acc" value="${bi2.accountNumber||''}"></div>
+      <div class="f"><label>BSB / Routing</label><input type="text" id="ue-bsb" value="${bi2.bsb||''}"></div>
+      <div class="f"><label>Account Holder Name</label><input type="text" id="ue-holder" value="${bi2.accountHolder||bi2.bankHolder||''}"></div>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn bp" onclick="saveUserEdit('${u.id}')">💾 Save Changes</button>
-      <button class="btn bd" onclick="banUser('${u.username}','${u.banned}')">🚫 ${u.banned?'Unban':'Ban'}</button>
+      <button class="btn bp" onclick="saveUserEdit('${u.id}')">💾 Save All Changes</button>
+      <button class="btn bd" onclick="banUser('${u.username}','${u.banned}')">🚫 ${u.banned?'Unban':'Ban'} User</button>
     </div>`;
   document.getElementById('user-modal').classList.add('show');
 }
@@ -839,11 +897,19 @@ function umTab(name,el){
 
 async function saveUserEdit(userId){
   const updates={
+    firstName: document.getElementById('ue-fn')?.value||'',
+    lastName: document.getElementById('ue-ln')?.value||'',
+    phone: document.getElementById('ue-phone')?.value||'',
     balance:parseFloat(document.getElementById('ue-bal').value),
-    notes:document.getElementById('ue-notes').value,
-    bankInfo:{bankName:document.getElementById('ue-bank').value,accountNumber:document.getElementById('ue-acc').value,bsb:document.getElementById('ue-bsb').value}
+    notes:document.getElementById('ue-notes')?.value||'',
+    bankInfo:{
+      bankName:document.getElementById('ue-bank')?.value||'',
+      accountNumber:document.getElementById('ue-acc')?.value||'',
+      bsb:document.getElementById('ue-bsb')?.value||'',
+      accountHolder:document.getElementById('ue-holder')?.value||''
+    }
   };
-  const np=document.getElementById('ue-pass').value;
+  const np=document.getElementById('ue-pass')?.value;
   if(np) updates.newPassword=np;
   const data=await api('POST','/admin/edit-user',{userId,updates});
   if(data.error)return notif(data.error,'error');

@@ -1050,3 +1050,164 @@ app.get('/api/admin/full-site-config', admin, (req,res) => {
     promotions: getPromos(db)
   });
 });
+
+// ══════════════════════════════════════════
+//  FORGOT PASSWORD
+// ══════════════════════════════════════════
+app.post('/api/auth/forgot-password', async (req,res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+  const db = readDB();
+  const user = db.users.find(u => u.email === email);
+  if (!user) return res.status(404).json({ error: 'No account found with that email' });
+  const resetCode = code6();
+  if (!db.resetCodes) db.resetCodes = [];
+  db.resetCodes = db.resetCodes.filter(r => r.email !== email);
+  db.resetCodes.push({ email, code: resetCode, userId: user.id, expiresAt: new Date(Date.now()+10*60000).toISOString() });
+  writeDB(db);
+  try {
+    await transporter.sendMail({
+      from: `"AUSGG" <${EMAIL_USER}>`,
+      to: email,
+      subject: `${resetCode} - AUSGG Password Reset`,
+      html: `<div style="font-family:Arial;padding:30px;background:#0f1923;color:#fff;border-radius:12px">
+        <h2 style="color:#00e701">🎰 AUSGG — Password Reset</h2>
+        <p>Hi ${user.username},</p>
+        <p>Your password reset code:</p>
+        <div style="font-size:40px;font-weight:700;color:#00e701;letter-spacing:10px;padding:20px 0">${resetCode}</div>
+        <p style="color:#888">Expires in 10 minutes. If you didn't request this, ignore this email.</p>
+      </div>`
+    });
+    res.json({ message: 'Reset code sent to your email!', email });
+  } catch(e) {
+    console.log(`⚠️ Reset code for ${email}: ${resetCode}`);
+    res.json({ message: 'Code sent (check server console if email fails)', email, devCode: EMAIL_USER.includes('your_gmail') ? resetCode : undefined });
+  }
+});
+
+app.post('/api/auth/reset-password', async (req,res) => {
+  const { email, code, newPassword } = req.body;
+  if (!email||!code||!newPassword) return res.status(400).json({ error: 'All fields required' });
+  if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  const db = readDB();
+  const reset = (db.resetCodes||[]).find(r => r.email === email);
+  if (!reset) return res.status(404).json({ error: 'No reset request found. Request a new code.' });
+  if (new Date() > new Date(reset.expiresAt)) return res.status(410).json({ error: 'Code expired. Request a new one.' });
+  if (reset.code !== code.trim()) return res.status(400).json({ error: 'Invalid code' });
+  const user = db.users.find(u => u.id === reset.userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  user.password = await bcrypt.hash(newPassword, 10);
+  db.resetCodes = db.resetCodes.filter(r => r.email !== email);
+  writeDB(db);
+  console.log(`🔑 Password reset: ${user.username}`);
+  res.json({ message: 'Password reset successfully! You can now log in.' });
+});
+
+// ══════════════════════════════════════════
+//  CUSTOMER PROFILE — view & update own info
+// ══════════════════════════════════════════
+app.get('/api/user/full-profile', auth, (req,res) => {
+  const db = readDB();
+  const user = db.users.find(u => u.id === req.userId);
+  if (!user) return res.status(404).json({ error: 'Not found' });
+  const { password:_, ...safe } = user;
+  res.json({ user: safe });
+});
+
+app.post('/api/user/update-profile', auth, async (req,res) => {
+  const { firstName, lastName, phone, bankInfo } = req.body;
+  const db = readDB();
+  const user = db.users.find(u => u.id === req.userId);
+  if (!user) return res.status(404).json({ error: 'Not found' });
+  if (firstName) user.firstName = firstName;
+  if (lastName) user.lastName = lastName;
+  if (phone) {
+    const phoneClean = phone.replace(/[^0-9]/g,'');
+    if (!/^(04\d{8}|614\d{8})$/.test(phoneClean.replace(/^\+/,''))) 
+      return res.status(400).json({ error: 'Invalid Australian mobile number' });
+    user.phone = phone;
+  }
+  if (bankInfo) user.bankInfo = { ...user.bankInfo, ...bankInfo };
+  writeDB(db);
+  const { password:_, ...safe } = user;
+  res.json({ message: 'Profile updated!', user: safe });
+});
+
+app.post('/api/user/change-password', auth, async (req,res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword||!newPassword) return res.status(400).json({ error: 'Both passwords required' });
+  if (newPassword.length < 6) return res.status(400).json({ error: 'New password min 6 chars' });
+  const db = readDB();
+  const user = db.users.find(u => u.id === req.userId);
+  if (!user) return res.status(404).json({ error: 'Not found' });
+  if (!await bcrypt.compare(currentPassword, user.password)) return res.status(400).json({ error: 'Current password is incorrect' });
+  user.password = await bcrypt.hash(newPassword, 10);
+  writeDB(db);
+  res.json({ message: 'Password changed successfully!' });
+});
+
+// ══════════════════════════════════════════
+//  ADMIN — ADD CUSTOMER MANUALLY
+// ══════════════════════════════════════════
+app.post('/api/admin/add-customer', admin, async (req,res) => {
+  const { username, email, password, firstName, lastName, phone, balance, bankInfo } = req.body;
+  if (!username||!email||!password) return res.status(400).json({ error:'Username, email and password required' });
+  if (password.length < 6) return res.status(400).json({ error:'Password must be at least 6 characters' });
+  const db = readDB();
+  if (db.users.find(u=>u.username===username)) return res.status(409).json({ error:'Username already taken' });
+  if (db.users.find(u=>u.email===email)) return res.status(409).json({ error:'Email already registered' });
+  const existingIds = db.users.map(u=>u.playerId).filter(Boolean);
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let playerId; 
+  do { playerId = Array.from({length:8},()=>chars[Math.floor(Math.random()*chars.length)]).join(''); } 
+  while(existingIds.includes(playerId));
+  const hashed = await bcrypt.hash(password, 10);
+  const newUser = {
+    id: uuidv4(), playerId,
+    username, email, password: hashed,
+    firstName: firstName||'', lastName: lastName||'',
+    phone: phone||'',
+    balance: fmt2(parseFloat(balance)||1000),
+    bankInfo: bankInfo||{},
+    emailVerified: true, banned: false,
+    totalDeposited:0, totalWithdrawn:0, totalBets:0, totalWon:0, totalLost:0,
+    notes: 'Created by admin', createdAt: new Date().toISOString(), lastLogin: null
+  };
+  db.users.push(newUser);
+  writeDB(db);
+  console.log(`👤 Admin created customer: ${username} (${playerId})`);
+  res.json({ message:`Customer ${username} created!`, playerId, userId: newUser.id });
+});
+
+// ══════════════════════════════════════════
+//  ADMIN — ADD CUSTOMER MANUALLY
+// ══════════════════════════════════════════
+app.post('/api/admin/add-customer', admin, async (req,res) => {
+  const { firstName, lastName, username, email, phone, password, balance, bankInfo } = req.body;
+  if (!username||!email||!password) return res.status(400).json({ error:'Username, email and password required' });
+  if (password.length < 6) return res.status(400).json({ error:'Password min 6 chars' });
+  const db = readDB();
+  if (db.users.find(u=>u.username===username)) return res.status(409).json({ error:'Username already taken' });
+  if (db.users.find(u=>u.email===email)) return res.status(409).json({ error:'Email already registered' });
+  const existingIds = db.users.map(u=>u.playerId).filter(Boolean);
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let playerId; 
+  do { playerId = Array.from({length:8},()=>chars[Math.floor(Math.random()*chars.length)]).join(''); } 
+  while(existingIds.includes(playerId));
+  const hashed = await bcrypt.hash(password, 10);
+  const newUser = {
+    id: uuidv4(), playerId,
+    username, email, password: hashed,
+    firstName: firstName||'', lastName: lastName||'', phone: phone||'',
+    balance: parseFloat(balance)||1000,
+    emailVerified: true, banned: false,
+    totalDeposited: 0, totalWithdrawn: 0, totalBets: 0, totalWon: 0, totalLost: 0,
+    bankInfo: bankInfo||{}, notes: 'Added by admin',
+    createdAt: new Date().toISOString(), lastLogin: new Date().toISOString()
+  };
+  db.users.push(newUser);
+  writeDB(db);
+  console.log(`👤 Admin created user: ${username} (${playerId})`);
+  const { password:_, ...safe } = newUser;
+  res.status(201).json({ message:`Customer "${username}" created!`, user: safe });
+});
