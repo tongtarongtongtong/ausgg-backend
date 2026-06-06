@@ -28,11 +28,10 @@ app.use((req,res,next)=>{ console.log(`[${new Date().toLocaleTimeString()}] ${re
 const DB_PATH = path.join(__dirname,'data','db.json');
 const DEFAULT_DB = {
   users:[], pendingUsers:[], transactions:[], bets:[],
-  chats:[], bonuses:[], promoCodes:[], announcements:[],
+  chats:[], supportRequests:[], requestTemplates:[], bonuses:[], promoCodes:[], announcements:[],
   notifications:[], gameConfig:{}, siteConfig:{},
   depositInstructions:{}, depositRequests:[], withdrawalRequests:[],
-  withdrawalFormFields:[], games:[], gameCategories:['Casino','Slots','Sports','Quickgame'],
-  admins:[], adminLogs:[]
+  withdrawalFormFields:[], games:[], gameCategories:['Casino','Slots','Sports','Quickgame']
 };
 
 function readDB() {
@@ -52,64 +51,9 @@ function auth(req,res,next) {
   catch(e) { res.status(401).json({error:'Invalid token'}); }
 }
 function admin(req,res,next) {
-  const db = readDB();
-  const a = adminFromReq(req, db);
-  if (!a) return res.status(403).json({error:'Forbidden'});
-  req.adminUser = a;
+  if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(403).json({error:'Forbidden'});
   next();
 }
-
-
-// ── Master/Staff Admin Helpers ──
-const ADMIN_PERMISSIONS = ['dashboard','users','addCustomer','deposits','withdrawals','bets','bonuses','promos','chat','site','games','master','logs'];
-function safeAdmin(a){ if(!a) return null; const {password:_,...safe}=a; return safe; }
-function ensureMasterAdmin(db){
-  if(!db.admins) db.admins=[];
-  if(!db.admins.find(a=>a.role==='master')){
-    db.admins.push({
-      id:'master', username:'master', name:'Master Admin', role:'master', active:true,
-      permissions:[...ADMIN_PERMISSIONS], createdAt:new Date().toISOString(), lastLogin:null, password:null
-    });
-  }
-}
-function adminFromReq(req, db){
-  ensureMasterAdmin(db);
-  const token=(req.headers['x-admin-token']||'').toString();
-  const key=(req.headers['x-admin-key']||'').toString();
-  if(key===ADMIN_KEY) return {id:'master', username:'master', name:'Master Admin', role:'master', permissions:[...ADMIN_PERMISSIONS], active:true};
-  if(!token) return null;
-  try{
-    const payload=jwt.verify(token, JWT_SECRET);
-    if(payload.type!=='admin') return null;
-    const a=(db.admins||[]).find(x=>x.id===payload.adminId && x.active!==false);
-    return a||null;
-  }catch(e){ return null; }
-}
-function adminAuth(requiredPerm=null){
-  return (req,res,next)=>{
-    const db=readDB();
-    const a=adminFromReq(req, db);
-    if(!a) return res.status(403).json({error:'Forbidden'});
-    if(requiredPerm && a.role!=='master' && !(a.permissions||[]).includes(requiredPerm)) return res.status(403).json({error:'No permission'});
-    req.adminUser=a;
-    next();
-  };
-}
-function logAdmin(action, detail, adminUser){
-  const db=readDB();
-  if(!db.adminLogs) db.adminLogs=[];
-  db.adminLogs.unshift({id:uuidv4(), action, detail:detail||'', admin:adminUser?.username||'master', createdAt:new Date().toISOString()});
-  db.adminLogs=db.adminLogs.slice(0,300);
-  writeDB(db);
-}
-function addAdminNotification(type, title, message, meta={}){
-  const db=readDB();
-  if(!db.notifications) db.notifications=[];
-  db.notifications.unshift({id:uuidv4(), type, title, message, meta, read:false, createdAt:new Date().toISOString()});
-  db.notifications=db.notifications.slice(0,300);
-  writeDB(db);
-}
-
 
 function fmt2(n) { return parseFloat((n||0).toFixed(2)); }
 function code6() { return Math.floor(100000+Math.random()*900000).toString(); }
@@ -120,6 +64,50 @@ function genPlayerId() {
   do { id = Array.from({length:8},()=>chars[Math.floor(Math.random()*chars.length)]).join(''); }
   while (db.users.find(u=>u.playerId===id));
   return id;
+}
+
+
+// ── Game Category Helpers ──
+const GAME_CATEGORIES = ['slot', 'casino', 'sport', 'egame'];
+const GAME_CATEGORY_META = {
+  slot: { label: 'Slot', icon: '🎰', description: 'Slot games only' },
+  casino: { label: 'Casino', icon: '🃏', description: 'Casino table games like baccarat and blackjack' },
+  sport: { label: 'Sport', icon: '⚽', description: 'Sports betting games' },
+  egame: { label: 'Egame', icon: '🎮', description: 'Virtual games like dice, mines, coin flip, virtual blackjack' }
+};
+function normalizeGameCategory(cat='egame') {
+  const c = String(cat || '').toLowerCase().trim();
+  if (['slots','slot'].includes(c)) return 'slot';
+  if (['casino','live casino','livecasino','live_casino'].includes(c)) return 'casino';
+  if (['sport','sports','sportsbook','betting'].includes(c)) return 'sport';
+  if (['egame','egames','e-game','virtual','quickgame','quickgames'].includes(c)) return 'egame';
+  return 'egame';
+}
+function normalizeGamesDB(db) {
+  const clean = { slot: [], casino: [], sport: [], egame: [] };
+  const add = (g, fallback) => {
+    if (!g) return;
+    const category = normalizeGameCategory(g.category || fallback);
+    clean[category].push({
+      id: g.id || uuidv4(),
+      name: g.name || 'Untitled Game',
+      category,
+      thumbnail: g.thumbnail || g.logo || '🎮',
+      description: g.description || '',
+      url: g.url || g.gameUrl || '',
+      launchType: g.launchType || (g.url ? 'url' : 'internal'),
+      enabled: g.enabled !== false,
+      rtp: g.rtp || 96,
+      minBet: g.minBet || 0.01,
+      maxBet: g.maxBet || 10000,
+      createdAt: g.createdAt || new Date().toISOString()
+    });
+  };
+  if (Array.isArray(db.games)) db.games.forEach(g => add(g, g.category));
+  else if (db.games && typeof db.games === 'object') Object.entries(db.games).forEach(([cat, list]) => (list || []).forEach(g => add(g, cat)));
+  db.games = clean;
+  db.gameCategories = GAME_CATEGORIES;
+  return clean;
 }
 
 // ══════════════════════════════════════════
@@ -243,10 +231,11 @@ app.post('/api/wallet/deposit-request', auth, (req,res) => {
   };
   if (!db.depositRequests) db.depositRequests=[];
   db.depositRequests.push(depReq);
+  if (!db.pendingRequests) db.pendingRequests=[];
+  db.pendingRequests.unshift({ ...depReq, type:'deposit_request' });
   // Notify admin (via notification log)
   if (!db.notifications) db.notifications=[];
   writeDB(db);
-  addAdminNotification('deposit','New deposit request',`${user.username} requested $${amt}`,{requestId:req_id,userId:user.id});
   console.log(`💰 Deposit request: ${user.username} $${amt} via ${method}`);
   res.json({message:'Deposit request submitted! Awaiting admin approval.',request:depReq});
 });
@@ -318,12 +307,13 @@ app.post('/api/wallet/withdraw', auth, (req,res) => {
   };
   if (!db.withdrawalRequests) db.withdrawalRequests=[];
   db.withdrawalRequests.push(wdReq);
+  if (!db.pendingRequests) db.pendingRequests=[];
+  db.pendingRequests.unshift({ ...wdReq, type:'withdrawal_request' });
   // Also add to transactions
   db.transactions.push({...wdReq,type:'withdraw'});
   // Save bank info to user profile
   if (formData) user.bankInfo = formData;
   writeDB(db);
-  addAdminNotification('withdrawal','New withdrawal request',`${user.username} requested $${amt}`,{requestId:wdReq.id,userId:user.id});
   console.log(`📤 Withdrawal request: ${user.username} $${amt}`);
   res.json({message:'Withdrawal submitted! Pending review.',request:wdReq,newBalance:user.balance});
 });
@@ -430,7 +420,7 @@ app.get('/api/deposit-instructions', (req,res) => {
   res.json({instructions:{...def,...db.depositInstructions}});
 });
 app.get('/api/announcements', (req,res) => { const db=readDB(); res.json({announcements:(db.announcements||[]).slice(0,5)}); });
-app.get('/api/games', (req,res) => { const db=readDB(); res.json({games:db.games||[],categories:db.gameCategories||['Casino','Slots','Sports','Quickgame']}); });
+app.get('/api/games', (req,res) => { const db=readDB(); const games=normalizeGamesDB(db); writeDB(db); res.json({games,categories:GAME_CATEGORIES,categoryMeta:GAME_CATEGORY_META}); });
 app.get('/api/leaderboard', (req,res) => { const db=readDB(); res.json({leaderboard:(db.users||[]).map(u=>({playerId:u.playerId,username:u.username,totalWon:u.totalWon||0,balance:u.balance,totalBets:u.totalBets||0})).sort((a,b)=>b.totalWon-a.totalWon).slice(0,10)}); });
 
 // ══════════════════════════════════════════
@@ -446,7 +436,7 @@ app.get('/api/admin/promos', admin, (req,res) => { const db=readDB(); res.json({
 app.get('/api/admin/announcements', admin, (req,res) => { const db=readDB(); res.json({announcements:db.announcements||[]}); });
 app.get('/api/admin/deposit-requests', admin, (req,res) => { const db=readDB(); res.json({requests:(db.depositRequests||[]).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))}); });
 app.get('/api/admin/withdrawal-requests', admin, (req,res) => { const db=readDB(); res.json({requests:(db.withdrawalRequests||[]).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))}); });
-app.get('/api/admin/games', admin, (req,res) => { const db=readDB(); res.json({games:db.games||[],categories:db.gameCategories||['Casino','Slots','Sports','Quickgame']}); });
+app.get('/api/admin/games', admin, (req,res) => { const db=readDB(); const games=normalizeGamesDB(db); writeDB(db); res.json({games,categories:GAME_CATEGORIES,categoryMeta:GAME_CATEGORY_META}); });
 app.get('/api/admin/game-config', admin, (req,res) => { const db=readDB(); const def={dice:{rtp:99,minBet:0.01,maxBet:10000,enabled:true},mines:{rtp:99,minBet:0.01,maxBet:10000,enabled:true},slots:{rtp:96,minBet:0.01,maxBet:10000,enabled:true},coin:{rtp:98,minBet:0.01,maxBet:10000,enabled:true},global:{maxWin:50000,startBalance:1000,maintenance:false,allowReg:true,autoBonus:false,autoBonusAmount:100}}; res.json({config:{...def,...(db.gameConfig||{})}}); });
 app.get('/api/admin/site-config', admin, (req,res) => { const db=readDB(); res.json({config:db.siteConfig||{}}); });
 app.get('/api/admin/deposit-instructions', admin, (req,res) => { const db=readDB(); res.json({instructions:db.depositInstructions||{}}); });
@@ -633,6 +623,66 @@ app.post('/api/admin/send-message', admin, (req,res) => {
   writeDB(db);
   res.json({message:'Sent'});
 });
+
+
+// Send a support request form into the user's live chat
+app.post('/api/admin/send-request-form', admin, (req,res) => {
+  const {userId,title,category,fields,note} = req.body;
+  if(!userId) return res.status(400).json({error:'User required'});
+  const db=readDB();
+  const user=(db.users||[]).find(u=>u.id===userId);
+  if(!user) return res.status(404).json({error:'User not found'});
+  if(!db.chats) db.chats=[];
+  let chat=db.chats.find(c=>c.userId===userId);
+  if(!chat){chat={userId:user.id,playerId:user.playerId,username:user.username,messages:[]};db.chats.push(chat);}
+  const form={
+    id:'FORM-'+uuidv4().slice(0,8).toUpperCase(),
+    title:title||'Support Request Form',
+    category:category||'support',
+    note:note||'Please fill this form so support can process your request.',
+    fields:Array.isArray(fields)&&fields.length?fields:[
+      {id:'details',label:'Details',type:'textarea',required:true,placeholder:'Explain your request'},
+      {id:'amount',label:'Amount (optional)',type:'number',required:false,placeholder:'0.00'},
+      {id:'reference',label:'Reference / ID (optional)',type:'text',required:false,placeholder:'Transaction ID, game round, etc.'}
+    ],
+    submitted:false,
+    createdAt:new Date().toISOString()
+  };
+  chat.messages.push({from:'admin',text:`📋 ${form.title}`,time:new Date().toISOString(),read:true,formRequest:form});
+  if(!db.notifications) db.notifications=[];
+  db.notifications.push({id:uuidv4(),userId:user.id,message:`📋 Support sent you a request form: ${form.title}`,type:'info',read:false,createdAt:new Date().toISOString()});
+  writeDB(db);
+  res.json({message:'Request form sent',form});
+});
+
+// Customer submits a support request form sent by admin
+app.post('/api/support/request-submit', auth, (req,res) => {
+  const {formId,category,title,answers} = req.body;
+  const db=readDB();
+  const user=(db.users||[]).find(u=>u.id===req.userId);
+  if(!user) return res.status(404).json({error:'User not found'});
+  const request={
+    id:'SREQ-'+uuidv4().slice(0,8).toUpperCase(),
+    type:'support_request',
+    formId:formId||null,
+    userId:user.id, username:user.username, playerId:user.playerId||'—',
+    category:category||'support', title:title||'Support Request',
+    answers:answers||{}, amount: answers?.Amount || answers?.amount || null,
+    status:'pending', adminNote:'', createdAt:new Date().toISOString()
+  };
+  if(!db.pendingRequests) db.pendingRequests=[];
+  db.pendingRequests.unshift(request);
+  if(!db.supportRequests) db.supportRequests=[];
+  db.supportRequests.unshift(request);
+  const chat=(db.chats||[]).find(c=>c.userId===user.id);
+  if(chat){
+    chat.messages.push({from:'user',text:`✅ Submitted request ${request.id}: ${request.title}`,time:new Date().toISOString(),read:false,requestId:request.id});
+    chat.messages.forEach(m=>{ if(m.formRequest&&m.formRequest.id===formId) m.formRequest.submitted=true; });
+  }
+  writeDB(db);
+  res.json({message:'Request submitted',request});
+});
+
 app.post('/api/admin/mark-read', admin, (req,res) => {
   const {userId}=req.body; const db=readDB();
   const chat=(db.chats||[]).find(c=>c.userId===userId);
@@ -694,7 +744,6 @@ app.post('/api/admin/delete-pending', admin, (req,res) => {
   writeDB(db);
   res.json({message:'Removed'});
 });
-
 
 // ══════════════════════════════════════════
 //  PLAYER ID GENERATION (8 char alphanumeric)
@@ -800,20 +849,28 @@ app.post('/api/wallet/withdraw-request', auth, (req, res) => {
 // ══════════════════════════════════════════
 app.get('/api/admin/pending-requests', admin, (req, res) => {
   const db = readDB();
-  res.json({ requests: (db.pendingRequests||[]).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)) });
+  const list=[...(db.pendingRequests||[])];
+  (db.depositRequests||[]).forEach(r=>{ if(!list.find(x=>x.id===r.id)) list.push({...r,type:'deposit_request'}); });
+  (db.withdrawalRequests||[]).forEach(r=>{ if(!list.find(x=>x.id===r.id)) list.push({...r,type:'withdrawal_request'}); });
+  res.json({ requests: list.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)) });
 });
 
 app.post('/api/admin/process-request', admin, (req, res) => {
-  const { id, action, note } = req.body; // action: approve|reject|process
+  let { id, action, note } = req.body; // action: approve|reject|process|complete
+  if(action==='complete') action='approved';
   const db = readDB();
   const req_ = (db.pendingRequests||[]).find(r=>r.id===id);
   if (!req_) return res.status(404).json({ error:'Not found' });
   const user = db.users.find(u=>u.id===req_.userId);
-  req_.status = action;
+  req_.status = action==='approve' ? 'approved' : action;
   req_.processedAt = new Date().toISOString();
   req_.adminNote = note||'';
 
   if (action==='approve') {
+    if (req_.type==='support_request') {
+      if(!db.notifications) db.notifications=[];
+      db.notifications.push({ id:uuidv4(), userId:req_.userId, message:`✅ Your request ${req_.id} is completed. ${note||''}`, type:'success', read:false, createdAt:new Date().toISOString() });
+    }
     if (req_.type==='deposit_request' && user) {
       user.balance = fmt2(user.balance + req_.amount);
       user.totalDeposited = fmt2((user.totalDeposited||0)+req_.amount);
@@ -848,30 +905,37 @@ app.get('/api/my-requests', auth, (req, res) => {
 // ══════════════════════════════════════════
 //  GAME MANAGEMENT
 // ══════════════════════════════════════════
-function getGames(db) {
-  if (!db.games) db.games = { casino:[], slots:[], sports:[], quickgames:[] };
-  return db.games;
-}
+function getGames(db) { return normalizeGamesDB(db); }
 
 app.get('/api/games', (req, res) => {
   const db = readDB();
-  res.json({ games: getGames(db) });
+  const games = normalizeGamesDB(db);
+  writeDB(db);
+  res.json({ games, categories: GAME_CATEGORIES, categoryMeta: GAME_CATEGORY_META });
 });
 
 app.get('/api/admin/games', admin, (req, res) => {
   const db = readDB();
-  res.json({ games: getGames(db) });
+  const games = normalizeGamesDB(db);
+  writeDB(db);
+  res.json({ games, categories: GAME_CATEGORIES, categoryMeta: GAME_CATEGORY_META });
 });
 
 app.post('/api/admin/games/add', admin, (req, res) => {
-  const { category, name, thumbnail, description, rtp, minBet, maxBet, enabled } = req.body;
-  const cats = ['casino','slots','sports','quickgames'];
-  if (!cats.includes(category)) return res.status(400).json({ error:'Invalid category' });
+  const { category, name, thumbnail, description, rtp, minBet, maxBet, enabled, url, launchType } = req.body;
+  if (!name) return res.status(400).json({ error:'Name required' });
   const db = readDB();
-  const games = getGames(db);
-  const game = { id:uuidv4(), name, thumbnail:thumbnail||'🎮', description:description||'', rtp:rtp||96, minBet:parseFloat(minBet)||0.01, maxBet:parseFloat(maxBet)||10000, enabled:enabled!==false, createdAt:new Date().toISOString() };
-  games[category].push(game);
-  db.games = games;
+  const games = normalizeGamesDB(db);
+  const cat = normalizeGameCategory(category);
+  const game = {
+    id: uuidv4(), category: cat, name,
+    thumbnail: thumbnail || '🎮', description: description || '',
+    url: url || '', launchType: launchType || (url ? 'url' : 'internal'),
+    rtp: parseFloat(rtp) || 96, minBet: parseFloat(minBet) || 0.01, maxBet: parseFloat(maxBet) || 10000,
+    enabled: enabled !== false, createdAt: new Date().toISOString()
+  };
+  games[cat].push(game);
+  db.games = games; db.gameCategories = GAME_CATEGORIES;
   writeDB(db);
   res.json({ message:'Game added!', game });
 });
@@ -879,10 +943,16 @@ app.post('/api/admin/games/add', admin, (req, res) => {
 app.post('/api/admin/games/update', admin, (req, res) => {
   const { category, gameId, updates } = req.body;
   const db = readDB();
-  const games = getGames(db);
-  const game = games[category]?.find(g=>g.id===gameId);
+  const games = normalizeGamesDB(db);
+  const cat = normalizeGameCategory(category);
+  const game = games[cat]?.find(g=>g.id===gameId);
   if (!game) return res.status(404).json({ error:'Not found' });
-  Object.assign(game, updates);
+  Object.assign(game, updates || {});
+  if (updates?.category && normalizeGameCategory(updates.category) !== cat) {
+    const newCat = normalizeGameCategory(updates.category);
+    games[cat] = games[cat].filter(g=>g.id!==gameId);
+    game.category = newCat; games[newCat].push(game);
+  }
   db.games = games;
   writeDB(db);
   res.json({ message:'Updated', game });
@@ -891,8 +961,9 @@ app.post('/api/admin/games/update', admin, (req, res) => {
 app.post('/api/admin/games/delete', admin, (req, res) => {
   const { category, gameId } = req.body;
   const db = readDB();
-  const games = getGames(db);
-  if (games[category]) games[category] = games[category].filter(g=>g.id!==gameId);
+  const games = normalizeGamesDB(db);
+  const cat = normalizeGameCategory(category);
+  if (games[cat]) games[cat] = games[cat].filter(g=>g.id!==gameId);
   db.games = games;
   writeDB(db);
   res.json({ message:'Deleted' });
@@ -1259,94 +1330,8 @@ app.post('/api/admin/add-customer', admin, async (req,res) => {
   res.status(201).json({ message:`Customer "${username}" created!`, user: safe });
 });
 
-// ══════════════════════════════════════════
-//  ADMIN — MASTER/STaff + Notifications + Logs
-// ══════════════════════════════════════════
-app.post('/api/admin/auth/login', async (req,res) => {
-  const {username,password,adminKey} = req.body || {};
-  const db = readDB();
-  ensureMasterAdmin(db);
-  if (adminKey && adminKey === ADMIN_KEY) {
-    db.admins = db.admins || [];
-    let master = db.admins.find(a=>a.role==='master') || db.admins.find(a=>a.id==='master');
-    if (master) master.lastLogin = new Date().toISOString();
-    writeDB(db);
-    const token = jwt.sign({type:'admin', adminId:'master'}, JWT_SECRET, {expiresIn:'7d'});
-    return res.json({message:'Master login successful', token, admin:{id:'master',username:'master',name:'Master Admin',role:'master',permissions:ADMIN_PERMISSIONS,active:true}});
-  }
-  if (!username || !password) return res.status(400).json({error:'Username and password required'});
-  const adminUser = (db.admins||[]).find(a=>a.username===username && a.active!==false);
-  if (!adminUser || !adminUser.password) return res.status(401).json({error:'Invalid admin login'});
-  if (!await bcrypt.compare(password, adminUser.password)) return res.status(401).json({error:'Invalid admin login'});
-  adminUser.lastLogin = new Date().toISOString();
-  writeDB(db);
-  const token = jwt.sign({type:'admin', adminId:adminUser.id}, JWT_SECRET, {expiresIn:'7d'});
-  res.json({message:'Admin login successful', token, admin:safeAdmin(adminUser)});
-});
-
-app.get('/api/admin/me', admin, (req,res) => res.json({admin:safeAdmin(req.adminUser), permissions:ADMIN_PERMISSIONS}));
-
-app.get('/api/admin/admins', adminAuth('master'), (req,res) => {
-  const db=readDB(); ensureMasterAdmin(db); writeDB(db);
-  res.json({admins:(db.admins||[]).map(safeAdmin), permissions:ADMIN_PERMISSIONS});
-});
-
-app.post('/api/admin/admins', adminAuth('master'), async (req,res) => {
-  const {username,name,password,permissions,active} = req.body || {};
-  if(!username||!password) return res.status(400).json({error:'Username and password required'});
-  if(password.length<6) return res.status(400).json({error:'Password must be at least 6 characters'});
-  const db=readDB(); ensureMasterAdmin(db);
-  if((db.admins||[]).find(a=>a.username===username)) return res.status(409).json({error:'Admin username already exists'});
-  const cleanPerms=(permissions||[]).filter(p=>ADMIN_PERMISSIONS.includes(p) && p!=='master');
-  const newAdmin={id:uuidv4(), username, name:name||username, role:'staff', active:active!==false, permissions:cleanPerms, password:await bcrypt.hash(password,10), createdAt:new Date().toISOString(), lastLogin:null};
-  db.admins.push(newAdmin); writeDB(db); logAdmin('create_admin',`Created staff admin ${username}`,req.adminUser);
-  res.status(201).json({message:'Staff admin created', admin:safeAdmin(newAdmin)});
-});
-
-app.put('/api/admin/admins/:id', adminAuth('master'), async (req,res) => {
-  const {name,password,permissions,active} = req.body || {};
-  const db=readDB(); ensureMasterAdmin(db);
-  const a=(db.admins||[]).find(x=>x.id===req.params.id);
-  if(!a) return res.status(404).json({error:'Admin not found'});
-  if(a.role==='master') return res.status(400).json({error:'Master admin cannot be edited here'});
-  if(name!==undefined) a.name=name;
-  if(active!==undefined) a.active=!!active;
-  if(Array.isArray(permissions)) a.permissions=permissions.filter(p=>ADMIN_PERMISSIONS.includes(p) && p!=='master');
-  if(password){ if(password.length<6) return res.status(400).json({error:'Password must be at least 6 characters'}); a.password=await bcrypt.hash(password,10); }
-  writeDB(db); logAdmin('update_admin',`Updated staff admin ${a.username}`,req.adminUser);
-  res.json({message:'Staff admin updated', admin:safeAdmin(a)});
-});
-
-app.delete('/api/admin/admins/:id', adminAuth('master'), (req,res) => {
-  const db=readDB(); ensureMasterAdmin(db);
-  const a=(db.admins||[]).find(x=>x.id===req.params.id);
-  if(!a) return res.status(404).json({error:'Admin not found'});
-  if(a.role==='master') return res.status(400).json({error:'Master admin cannot be deleted'});
-  a.active=false; writeDB(db); logAdmin('disable_admin',`Disabled staff admin ${a.username}`,req.adminUser);
-  res.json({message:'Staff admin disabled'});
-});
-
-app.get('/api/admin/logs', adminAuth('logs'), (req,res) => {
-  const db=readDB(); res.json({logs:db.adminLogs||[]});
-});
-
-app.get('/api/admin/notifications', admin, (req,res) => {
-  const db=readDB(); res.json({notifications:(db.notifications||[]).slice(0,100)});
-});
-
-app.post('/api/admin/notifications/read', admin, (req,res) => {
-  const db=readDB(); (db.notifications||[]).forEach(n=>n.read=true); writeDB(db); res.json({message:'Notifications marked read'});
-});
-
-
 app.use((req,res)=>res.status(404).json({error:'Not found'}));
 
 app.listen(PORT,()=>{
-  console.log('\n🎰 ══════════════════════════════════════');
-  console.log('   AUSGG Backend v5 — Master Admin Build');
-  console.log('════════════════════════════════════════');
-  console.log(`✅ Server:  http://localhost:${PORT}`);
-  console.log(`🎮 Admin:   http://localhost:${PORT}/admin.html`);
-  console.log(`📁 DB:      ${DB_PATH}`);
-  console.log('════════════════════════════════════════\n');
+  console.log('AUSGG Backend running on port '+PORT);
 });
