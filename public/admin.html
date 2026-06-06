@@ -116,6 +116,25 @@ input:checked+.togs:before{transform:translateX(18px)}
 .tabs-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
 .tab-btn{padding:6px 14px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);transition:all .12s}
 .tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* AUSGG Pro Dashboard Update */
+.notif-wrap{position:relative}
+.notif-btn{position:relative}
+.notif-count{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border-radius:50%;font-size:9px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.notif-panel{display:none;position:absolute;right:0;top:34px;width:360px;max-height:430px;overflow:auto;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.45);z-index:2000}
+.notif-panel.show{display:block}
+.notif-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
+.notif-item{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px}
+.notif-item.unread{background:rgba(99,102,241,.08)}
+.notif-type{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px}
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.quick-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px;cursor:pointer;transition:.12s}
+.quick-card:hover{background:var(--bg3);transform:translateY(-1px);border-color:var(--accent)}
+.quick-title{font-size:12px;font-weight:700;margin-bottom:4px}
+.quick-sub{font-size:10px;color:var(--muted)}
+.analytics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:1000px){.quick-grid,.analytics-grid{grid-template-columns:repeat(2,1fr)}.notif-panel{right:-120px;width:320px}}
+
 </style>
 </head>
 <body>
@@ -137,7 +156,7 @@ input:checked+.togs:before{transform:translateX(18px)}
   <div class="topbar">
     <div class="logo">🎰 AUSGG <span>MASTER</span></div>
     <div class="tr">
-      <div class="badge-online"><div class="dot"></div> Live</div><button class="btn bg" onclick="toggleSound()" id="soundBtn" style="font-size:11px">🔊 Sound</button><span id="adminRoleBadge" class="badge-online">Master</span>
+      <div class="badge-online"><div class="dot"></div> Live</div><button class="btn bg" onclick="toggleSound()" id="soundBtn" style="font-size:11px">🔊 Sound</button><div class="notif-wrap"><button class="btn bg notif-btn" onclick="toggleNotifPanel()" style="font-size:11px">🔔 Alerts <span id="notifCount" class="notif-count" style="display:none">0</span></button><div id="notifPanel" class="notif-panel"><div class="notif-head"><strong>Notifications</strong><button class="btn bg" style="font-size:10px" onclick="markNotificationsRead()">Mark read</button></div><div id="notifList"><div class="er">No notifications yet</div></div></div></div><span id="adminRoleBadge" class="badge-online">Master</span>
       <div class="rc">🔄 <span id="rc">10</span>s</div>
       <button class="btn bg" onclick="refreshAll()" style="font-size:11px">Refresh</button>
       <button class="btn bd" onclick="doLogout()" style="font-size:11px">Logout</button>
@@ -195,6 +214,18 @@ input:checked+.togs:before{transform:translateX(18px)}
       <!-- DASHBOARD -->
       <div class="tab active" id="tab-dashboard">
         <div class="pt">📊 Dashboard <span class="sub">Auto-refreshes every 10s</span></div>
+        <div class="quick-grid">
+          <div class="quick-card" onclick="st('users',document.querySelector('[onclick*=\'users\']'))"><div class="quick-title">👤 Add / manage users</div><div class="quick-sub">Create customers and edit balances</div></div>
+          <div class="quick-card" onclick="st('requests',document.querySelector('[onclick*=\'requests\']'))"><div class="quick-title">💳 Finance requests</div><div class="quick-sub">Approve deposits and withdrawals</div></div>
+          <div class="quick-card" onclick="st('chat',document.querySelector('[onclick*=\'chat\']'))"><div class="quick-title">💬 Live support</div><div class="quick-sub">Reply to player messages</div></div>
+          <div class="quick-card master-only" onclick="st('master',document.querySelector('[onclick*=\'master\']'));loadAdmins();loadLogs();"><div class="quick-title">👑 Staff admins</div><div class="quick-sub">Create admins and permissions</div></div>
+        </div>
+        <div class="analytics-grid">
+          <div class="sc"><div class="sl">Pending Deposit $</div><div class="sv" id="d-pdep" style="color:var(--green)">—</div></div>
+          <div class="sc"><div class="sl">Pending Withdraw $</div><div class="sv" id="d-pwdamt" style="color:var(--red)">—</div></div>
+          <div class="sc"><div class="sl">Total User Balance</div><div class="sv" id="d-bal" style="color:var(--gold)">—</div></div>
+          <div class="sc"><div class="sl">Unread Alerts</div><div class="sv" id="d-alerts" style="color:var(--a2)">0</div></div>
+        </div>
         <div class="sg">
           <div class="sc"><div class="sl">Users</div><div class="sv" id="d-users" style="color:var(--a2)">—</div></div>
           <div class="sc"><div class="sl">Pending Requests</div><div class="sv" id="d-reqs" style="color:var(--gold)">—</div></div>
@@ -792,6 +823,25 @@ function notif(msg,type='success'){
 }
 
 
+function toggleNotifPanel(){document.getElementById('notifPanel')?.classList.toggle('show');}
+async function markNotificationsRead(){
+  await api('POST','/admin/notifications/read',{});
+  await loadNotificationCenter();
+  notif('Notifications marked read','info');
+}
+async function loadNotificationCenter(){
+  const d=await api('GET','/admin/notifications');
+  const ns=d.notifications||[];
+  const unread=ns.filter(n=>!n.read).length;
+  const badge=document.getElementById('notifCount');
+  if(badge){badge.textContent=unread; badge.style.display=unread?'flex':'none';}
+  const da=document.getElementById('d-alerts'); if(da) da.textContent=unread;
+  const list=document.getElementById('notifList');
+  if(list){
+    list.innerHTML=ns.slice(0,25).map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div class="notif-type">${n.type||'info'} • ${ago(n.createdAt)}</div><div>${n.message||n.detail||'New notification'}</div></div>`).join('') || '<div class="er">No notifications yet</div>';
+  }
+}
+
 function toggleSound(){
   soundOn=!soundOn; localStorage.setItem('ausggSound',soundOn?'on':'off');
   document.getElementById('soundBtn').textContent=soundOn?'🔊 Sound':'🔇 Muted';
@@ -857,6 +907,7 @@ async function pollNotifications(){
       if(n.type==='withdrawal' && document.getElementById('sound-withdrawal')?.checked) playAdminSound('withdrawal');
     }
   }
+  loadNotificationCenter();
 }
 function openAddUser(){document.getElementById('add-user-modal').classList.add('show');}
 async function addCustomer(){
@@ -885,7 +936,7 @@ function st(name,el){
 
 function refreshAll(){
   loadDashboard();loadUsers();loadPendingReg();loadRequests();loadTransactions();
-  loadBets();loadChats();loadGameConfig();loadSiteConfig();loadDI();loadGames();loadAnn();loadPromos();pollNotifications();
+  loadBets();loadChats();loadGameConfig();loadSiteConfig();loadDI();loadGames();loadAnn();loadPromos();pollNotifications();loadNotificationCenter();
   countdown=10;
 }
 
@@ -904,6 +955,12 @@ async function loadDashboard(){
   document.getElementById('d-bets').textContent=b.length;
   document.getElementById('d-wag').textContent=fmt(b.reduce((s,x)=>s+x.betAmount,0));
   const pw=r.filter(x=>x.type==='withdrawal_request'&&x.status==='pending').length;
+  const pdepAmt=r.filter(x=>x.type==='deposit_request'&&x.status==='pending').reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
+  const pwdAmt=r.filter(x=>x.type==='withdrawal_request'&&x.status==='pending').reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
+  const totalBal=u.reduce((s,x)=>s+(parseFloat(x.balance)||0),0);
+  if(document.getElementById('d-pdep')) document.getElementById('d-pdep').textContent=fmt(pdepAmt);
+  if(document.getElementById('d-pwdamt')) document.getElementById('d-pwdamt').textContent=fmt(pwdAmt);
+  if(document.getElementById('d-bal')) document.getElementById('d-bal').textContent=fmt(totalBal);
   document.getElementById('d-wd').textContent=pw;
   document.getElementById('wdb').textContent=pw;
   document.getElementById('reqb').textContent=r.filter(x=>x.status==='pending').length;

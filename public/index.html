@@ -182,12 +182,88 @@
   .toast-win { background: #1a3a1a; border: 1px solid var(--accent); color: var(--accent); }
   .toast-lose { background: #3a1a1a; border: 1px solid var(--red); color: #ff6b6b; }
 
+  /* ── MOBILE SLIDE MENU ── */
+  .mobile-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 22px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  .mobile-menu-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.62);
+    z-index: 180;
+  }
+  .mobile-menu-backdrop.show { display: block; }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 900px) {
-    .sidebar { display: none; }
+    .topbar { padding: 0 12px; gap: 8px; }
+    .mobile-menu-btn { display: inline-flex; flex-shrink: 0; }
+    .logo { font-size: 17px; }
+    .logo span { display: none; }
+    .topbar-right { gap: 6px; }
+    #topbar-guest { gap: 6px !important; }
+    #topbar-guest .btn { padding: 7px 10px; font-size: 12px; }
+    #topbar-user { gap: 6px !important; }
+    #topbar-user > div[style*="font-size:13px"] { display: none; }
+    #topbar-user .btn { padding: 6px 9px !important; font-size: 11px !important; }
+    .balance-pill { padding: 6px 9px; }
+    .balance-val { font-size: 12px; }
+    .main { position: relative; }
+    .sidebar {
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 280px;
+      max-width: 82vw;
+      padding-top: 74px;
+      z-index: 200;
+      transform: translateX(-105%);
+      transition: transform 0.22s ease;
+      box-shadow: 20px 0 50px rgba(0,0,0,0.45);
+      overflow-y: auto;
+    }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar::before {
+      content: '🎰 AUSGG Menu';
+      position: absolute;
+      top: 18px;
+      left: 16px;
+      right: 16px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+    }
+    .content { padding: 16px; }
     .game-wrapper { grid-template-columns: 1fr; }
     .stat-cards { grid-template-columns: repeat(2, 1fr); }
-    .game-cards { grid-template-columns: repeat(2, 1fr); }
+    .game-cards { grid-template-columns: 1fr; }
+    .home-hero { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .wallet-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .stat-cards { grid-template-columns: 1fr; }
+    .dice-stats { grid-template-columns: 1fr; }
+    .reel { width: 70px; height: 70px; font-size: 42px; }
+    .content { padding: 12px; }
   }
 
   /* ── SCROLLBAR ── */
@@ -373,6 +449,7 @@
 
   <!-- TOPBAR -->
   <div class="topbar">
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Open menu">☰</button>
     <div class="logo">🎰 AUSGG <span>PLAY MONEY</span></div>
     <div class="topbar-right">
       <div id="topbar-guest" style="display:flex;align-items:center;gap:10px">
@@ -400,6 +477,8 @@
     <h1 style="font-size:28px;font-weight:700;margin-bottom:10px">Under Maintenance</h1>
     <p style="color:var(--text-secondary);font-size:16px">We'll be back soon. Thank you for your patience!</p>
   </div>
+
+  <div class="mobile-menu-backdrop" id="mobile-menu-backdrop" onclick="closeMobileMenu()"></div>
 
   <div class="main">
     <!-- SIDEBAR -->
@@ -1230,6 +1309,7 @@ function recordBet(game, betAmount, win, payout, detail = '') {
   saveState();
   updateAllDisplays();
   renderLiveBets();
+  closeMobileMenu();
 }
 
 // ── Display Updates ──
@@ -1676,6 +1756,26 @@ function flipCoin() {
     btn.disabled = false;
   }, 1350);
 }
+
+// ═══════════════════════════════════════════
+//  MOBILE SLIDE MENU
+// ═══════════════════════════════════════════
+function toggleMobileMenu() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('mobile-menu-backdrop');
+  if (!sidebar || !backdrop) return;
+  sidebar.classList.toggle('open');
+  backdrop.classList.toggle('show');
+}
+function closeMobileMenu() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('mobile-menu-backdrop');
+  if (sidebar) sidebar.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('show');
+}
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 900) closeMobileMenu();
+});
 
 // ═══════════════════════════════════════════
 //  PAGE ROUTING
