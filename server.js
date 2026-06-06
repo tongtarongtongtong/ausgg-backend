@@ -31,7 +31,8 @@ const DEFAULT_DB = {
   chats:[], bonuses:[], promoCodes:[], announcements:[],
   notifications:[], gameConfig:{}, siteConfig:{},
   depositInstructions:{}, depositRequests:[], withdrawalRequests:[],
-  withdrawalFormFields:[], games:[], gameCategories:['Casino','Slots','Sports','Quickgame']
+  withdrawalFormFields:[], games:[], gameCategories:['Casino','Slots','Sports','Quickgame'],
+  admins:[], adminLogs:[]
 };
 
 function readDB() {
@@ -51,9 +52,64 @@ function auth(req,res,next) {
   catch(e) { res.status(401).json({error:'Invalid token'}); }
 }
 function admin(req,res,next) {
-  if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(403).json({error:'Forbidden'});
+  const db = readDB();
+  const a = adminFromReq(req, db);
+  if (!a) return res.status(403).json({error:'Forbidden'});
+  req.adminUser = a;
   next();
 }
+
+
+// ── Master/Staff Admin Helpers ──
+const ADMIN_PERMISSIONS = ['dashboard','users','addCustomer','deposits','withdrawals','bets','bonuses','promos','chat','site','games','master','logs'];
+function safeAdmin(a){ if(!a) return null; const {password:_,...safe}=a; return safe; }
+function ensureMasterAdmin(db){
+  if(!db.admins) db.admins=[];
+  if(!db.admins.find(a=>a.role==='master')){
+    db.admins.push({
+      id:'master', username:'master', name:'Master Admin', role:'master', active:true,
+      permissions:[...ADMIN_PERMISSIONS], createdAt:new Date().toISOString(), lastLogin:null, password:null
+    });
+  }
+}
+function adminFromReq(req, db){
+  ensureMasterAdmin(db);
+  const token=(req.headers['x-admin-token']||'').toString();
+  const key=(req.headers['x-admin-key']||'').toString();
+  if(key===ADMIN_KEY) return {id:'master', username:'master', name:'Master Admin', role:'master', permissions:[...ADMIN_PERMISSIONS], active:true};
+  if(!token) return null;
+  try{
+    const payload=jwt.verify(token, JWT_SECRET);
+    if(payload.type!=='admin') return null;
+    const a=(db.admins||[]).find(x=>x.id===payload.adminId && x.active!==false);
+    return a||null;
+  }catch(e){ return null; }
+}
+function adminAuth(requiredPerm=null){
+  return (req,res,next)=>{
+    const db=readDB();
+    const a=adminFromReq(req, db);
+    if(!a) return res.status(403).json({error:'Forbidden'});
+    if(requiredPerm && a.role!=='master' && !(a.permissions||[]).includes(requiredPerm)) return res.status(403).json({error:'No permission'});
+    req.adminUser=a;
+    next();
+  };
+}
+function logAdmin(action, detail, adminUser){
+  const db=readDB();
+  if(!db.adminLogs) db.adminLogs=[];
+  db.adminLogs.unshift({id:uuidv4(), action, detail:detail||'', admin:adminUser?.username||'master', createdAt:new Date().toISOString()});
+  db.adminLogs=db.adminLogs.slice(0,300);
+  writeDB(db);
+}
+function addAdminNotification(type, title, message, meta={}){
+  const db=readDB();
+  if(!db.notifications) db.notifications=[];
+  db.notifications.unshift({id:uuidv4(), type, title, message, meta, read:false, createdAt:new Date().toISOString()});
+  db.notifications=db.notifications.slice(0,300);
+  writeDB(db);
+}
+
 
 function fmt2(n) { return parseFloat((n||0).toFixed(2)); }
 function code6() { return Math.floor(100000+Math.random()*900000).toString(); }
@@ -190,6 +246,7 @@ app.post('/api/wallet/deposit-request', auth, (req,res) => {
   // Notify admin (via notification log)
   if (!db.notifications) db.notifications=[];
   writeDB(db);
+  addAdminNotification('deposit','New deposit request',`${user.username} requested $${amt}`,{requestId:req_id,userId:user.id});
   console.log(`💰 Deposit request: ${user.username} $${amt} via ${method}`);
   res.json({message:'Deposit request submitted! Awaiting admin approval.',request:depReq});
 });
@@ -266,6 +323,7 @@ app.post('/api/wallet/withdraw', auth, (req,res) => {
   // Save bank info to user profile
   if (formData) user.bankInfo = formData;
   writeDB(db);
+  addAdminNotification('withdrawal','New withdrawal request',`${user.username} requested $${amt}`,{requestId:wdReq.id,userId:user.id});
   console.log(`📤 Withdrawal request: ${user.username} $${amt}`);
   res.json({message:'Withdrawal submitted! Pending review.',request:wdReq,newBalance:user.balance});
 });
@@ -637,17 +695,6 @@ app.post('/api/admin/delete-pending', admin, (req,res) => {
   res.json({message:'Removed'});
 });
 
-app.use((req,res)=>res.status(404).json({error:'Not found'}));
-
-app.listen(PORT,()=>{
-  console.log('\n🎰 ══════════════════════════════════════');
-  console.log('   AUSGG Backend v5 — Full Feature Build');
-  console.log('════════════════════════════════════════');
-  console.log(`✅ Server:  http://localhost:${PORT}`);
-  console.log(`🎮 Admin:   http://localhost:${PORT}/admin.html`);
-  console.log(`📁 DB:      ${DB_PATH}`);
-  console.log('════════════════════════════════════════\n');
-});
 
 // ══════════════════════════════════════════
 //  PLAYER ID GENERATION (8 char alphanumeric)
@@ -1210,4 +1257,96 @@ app.post('/api/admin/add-customer', admin, async (req,res) => {
   console.log(`👤 Admin created user: ${username} (${playerId})`);
   const { password:_, ...safe } = newUser;
   res.status(201).json({ message:`Customer "${username}" created!`, user: safe });
+});
+
+// ══════════════════════════════════════════
+//  ADMIN — MASTER/STaff + Notifications + Logs
+// ══════════════════════════════════════════
+app.post('/api/admin/auth/login', async (req,res) => {
+  const {username,password,adminKey} = req.body || {};
+  const db = readDB();
+  ensureMasterAdmin(db);
+  if (adminKey && adminKey === ADMIN_KEY) {
+    db.admins = db.admins || [];
+    let master = db.admins.find(a=>a.role==='master') || db.admins.find(a=>a.id==='master');
+    if (master) master.lastLogin = new Date().toISOString();
+    writeDB(db);
+    const token = jwt.sign({type:'admin', adminId:'master'}, JWT_SECRET, {expiresIn:'7d'});
+    return res.json({message:'Master login successful', token, admin:{id:'master',username:'master',name:'Master Admin',role:'master',permissions:ADMIN_PERMISSIONS,active:true}});
+  }
+  if (!username || !password) return res.status(400).json({error:'Username and password required'});
+  const adminUser = (db.admins||[]).find(a=>a.username===username && a.active!==false);
+  if (!adminUser || !adminUser.password) return res.status(401).json({error:'Invalid admin login'});
+  if (!await bcrypt.compare(password, adminUser.password)) return res.status(401).json({error:'Invalid admin login'});
+  adminUser.lastLogin = new Date().toISOString();
+  writeDB(db);
+  const token = jwt.sign({type:'admin', adminId:adminUser.id}, JWT_SECRET, {expiresIn:'7d'});
+  res.json({message:'Admin login successful', token, admin:safeAdmin(adminUser)});
+});
+
+app.get('/api/admin/me', admin, (req,res) => res.json({admin:safeAdmin(req.adminUser), permissions:ADMIN_PERMISSIONS}));
+
+app.get('/api/admin/admins', adminAuth('master'), (req,res) => {
+  const db=readDB(); ensureMasterAdmin(db); writeDB(db);
+  res.json({admins:(db.admins||[]).map(safeAdmin), permissions:ADMIN_PERMISSIONS});
+});
+
+app.post('/api/admin/admins', adminAuth('master'), async (req,res) => {
+  const {username,name,password,permissions,active} = req.body || {};
+  if(!username||!password) return res.status(400).json({error:'Username and password required'});
+  if(password.length<6) return res.status(400).json({error:'Password must be at least 6 characters'});
+  const db=readDB(); ensureMasterAdmin(db);
+  if((db.admins||[]).find(a=>a.username===username)) return res.status(409).json({error:'Admin username already exists'});
+  const cleanPerms=(permissions||[]).filter(p=>ADMIN_PERMISSIONS.includes(p) && p!=='master');
+  const newAdmin={id:uuidv4(), username, name:name||username, role:'staff', active:active!==false, permissions:cleanPerms, password:await bcrypt.hash(password,10), createdAt:new Date().toISOString(), lastLogin:null};
+  db.admins.push(newAdmin); writeDB(db); logAdmin('create_admin',`Created staff admin ${username}`,req.adminUser);
+  res.status(201).json({message:'Staff admin created', admin:safeAdmin(newAdmin)});
+});
+
+app.put('/api/admin/admins/:id', adminAuth('master'), async (req,res) => {
+  const {name,password,permissions,active} = req.body || {};
+  const db=readDB(); ensureMasterAdmin(db);
+  const a=(db.admins||[]).find(x=>x.id===req.params.id);
+  if(!a) return res.status(404).json({error:'Admin not found'});
+  if(a.role==='master') return res.status(400).json({error:'Master admin cannot be edited here'});
+  if(name!==undefined) a.name=name;
+  if(active!==undefined) a.active=!!active;
+  if(Array.isArray(permissions)) a.permissions=permissions.filter(p=>ADMIN_PERMISSIONS.includes(p) && p!=='master');
+  if(password){ if(password.length<6) return res.status(400).json({error:'Password must be at least 6 characters'}); a.password=await bcrypt.hash(password,10); }
+  writeDB(db); logAdmin('update_admin',`Updated staff admin ${a.username}`,req.adminUser);
+  res.json({message:'Staff admin updated', admin:safeAdmin(a)});
+});
+
+app.delete('/api/admin/admins/:id', adminAuth('master'), (req,res) => {
+  const db=readDB(); ensureMasterAdmin(db);
+  const a=(db.admins||[]).find(x=>x.id===req.params.id);
+  if(!a) return res.status(404).json({error:'Admin not found'});
+  if(a.role==='master') return res.status(400).json({error:'Master admin cannot be deleted'});
+  a.active=false; writeDB(db); logAdmin('disable_admin',`Disabled staff admin ${a.username}`,req.adminUser);
+  res.json({message:'Staff admin disabled'});
+});
+
+app.get('/api/admin/logs', adminAuth('logs'), (req,res) => {
+  const db=readDB(); res.json({logs:db.adminLogs||[]});
+});
+
+app.get('/api/admin/notifications', admin, (req,res) => {
+  const db=readDB(); res.json({notifications:(db.notifications||[]).slice(0,100)});
+});
+
+app.post('/api/admin/notifications/read', admin, (req,res) => {
+  const db=readDB(); (db.notifications||[]).forEach(n=>n.read=true); writeDB(db); res.json({message:'Notifications marked read'});
+});
+
+
+app.use((req,res)=>res.status(404).json({error:'Not found'}));
+
+app.listen(PORT,()=>{
+  console.log('\n🎰 ══════════════════════════════════════');
+  console.log('   AUSGG Backend v5 — Master Admin Build');
+  console.log('════════════════════════════════════════');
+  console.log(`✅ Server:  http://localhost:${PORT}`);
+  console.log(`🎮 Admin:   http://localhost:${PORT}/admin.html`);
+  console.log(`📁 DB:      ${DB_PATH}`);
+  console.log('════════════════════════════════════════\n');
 });
