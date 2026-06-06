@@ -7,29 +7,122 @@
   "supportChats": [],
   "supportRequests": [],
   "games": [
-    {"id":"GAME-DICE","name":"Dice","category":"Egame","thumbnail":"🎲","description":"Roll and win with play-money credits.","playUrl":"#dice","enabled":true,"rtp":96,"minBet":1,"maxBet":1000},
-    {"id":"GAME-MINES","name":"Mines","category":"Egame","thumbnail":"💎","description":"Pick gems, avoid mines.","playUrl":"#mines","enabled":true,"rtp":96,"minBet":1,"maxBet":1000},
-    {"id":"GAME-SLOTS","name":"Slots","category":"Slot","thumbnail":"🎰","description":"Classic demo slot game.","playUrl":"#slots","enabled":true,"rtp":96,"minBet":1,"maxBet":1000},
-    {"id":"GAME-COIN","name":"Coin Flip","category":"Egame","thumbnail":"🪙","description":"Heads or tails demo game.","playUrl":"#coinflip","enabled":true,"rtp":96,"minBet":1,"maxBet":1000},
-    {"id":"GAME-BLACKJACK","name":"Blackjack Virtual","category":"Egame","thumbnail":"🃏","description":"Virtual blackjack demo.","playUrl":"#blackjack","enabled":true,"rtp":96,"minBet":1,"maxBet":1000}
+    {
+      "id": "GAME-dice",
+      "name": "Dice",
+      "category": "Egame",
+      "thumbnail": "\ud83c\udfb2",
+      "description": "Fast virtual dice game",
+      "playUrl": "#dice",
+      "rtp": 96,
+      "minBet": 1,
+      "maxBet": 1000,
+      "enabled": true
+    },
+    {
+      "id": "GAME-mines",
+      "name": "Mines",
+      "category": "Egame",
+      "thumbnail": "\ud83d\udc8e",
+      "description": "Pick gems and avoid mines",
+      "playUrl": "#mines",
+      "rtp": 96,
+      "minBet": 1,
+      "maxBet": 1000,
+      "enabled": true
+    },
+    {
+      "id": "GAME-slots",
+      "name": "AUSGG Slots",
+      "category": "Slot",
+      "thumbnail": "\ud83c\udfb0",
+      "description": "Classic slot demo game",
+      "playUrl": "#slots",
+      "rtp": 96,
+      "minBet": 1,
+      "maxBet": 1000,
+      "enabled": true
+    },
+    {
+      "id": "GAME-coin",
+      "name": "Coin Flip",
+      "category": "Egame",
+      "thumbnail": "\ud83e\ude99",
+      "description": "Heads or tails virtual game",
+      "playUrl": "#coinflip",
+      "rtp": 96,
+      "minBet": 1,
+      "maxBet": 1000,
+      "enabled": true
+    },
+    {
+      "id": "GAME-blackjack",
+      "name": "Blackjack Virtual",
+      "category": "Casino",
+      "thumbnail": "\ud83c\udccf",
+      "description": "Demo casino table game",
+      "playUrl": "#blackjack",
+      "rtp": 96,
+      "minBet": 1,
+      "maxBet": 1000,
+      "enabled": true
+    },
+    {
+      "id": "GAME-sports",
+      "name": "AUSGG Sportsbook",
+      "category": "Sport",
+      "thumbnail": "\u26bd",
+      "description": "Demo sportsbook lobby",
+      "playUrl": "#sports",
+      "rtp": 96,
+      "minBet": 1,
+      "maxBet": 1000,
+      "enabled": true
+    }
   ],
   "siteConfig": {
-    "brandName": "AUSGG",
+    "brand": "AUSGG",
+    "tagline": "Premium play-money casino demo",
     "heroTitle": "Welcome to AUSGG",
-    "heroSubtitle": "Play-money casino demo for learning, testing, and UI practice.",
-    "notice": "Demo only. No real money involved."
+    "heroSub": "Play-money casino dashboard for study, testing, and demo learning.",
+    "theme": "emerald",
+    "notice": "Demo credits only \u2014 no real money."
   },
   "depositSettings": {
-    "title": "Deposit Play Credits",
-    "instructions": "Submit a play-money deposit request. Admin approval adds credits to your demo balance.",
+    "title": "Deposit Credits",
+    "instructions": "Submit your demo deposit request. Admin will process it from the dashboard.",
     "minAmount": 10,
-    "methods": ["Demo Bank", "Demo Crypto", "Manual Credit"]
+    "methods": [
+      "Bank Transfer",
+      "PayID",
+      "USDT TRC20",
+      "Demo Cash"
+    ]
   },
   "withdrawSettings": {
-    "title": "Withdraw Play Credits",
-    "instructions": "Submit a play-money withdrawal request. This is only a demo workflow.",
+    "title": "Withdraw Credits",
+    "instructions": "Request a demo payout review. Admin can process, complete, or reject with a note.",
     "minAmount": 10,
-    "methods": ["Demo Bank", "Manual Review"]
+    "fields": [
+      {
+        "id": "fullName",
+        "label": "Full Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "bankName",
+        "label": "Bank Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "id": "accountNumber",
+        "label": "Account Number",
+        "type": "text",
+        "required": true
+      }
+    ]
   },
   "announcements": [],
   "notifications": [],

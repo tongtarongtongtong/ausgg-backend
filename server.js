@@ -49,7 +49,7 @@ function notify(db, type, text){
 }
 function findUser(db, id){ return db.users.find(u => u.id === id); }
 
-app.get('/', (req,res)=>res.json({status:'online', server:'AUSGG clean demo', time:new Date().toISOString()}));
+app.get('/', (req,res)=>res.json({status:'online', server:'AUSGG premium demo', time:new Date().toISOString()}));
 app.get('/api/config', (req,res)=>{ const db=readDB(); res.json({siteConfig:db.siteConfig, categories:['Slot','Casino','Sport','Egame']}); });
 app.get('/api/site-config', (req,res)=>{ const db=readDB(); res.json(db.siteConfig); });
 
@@ -129,4 +129,4 @@ app.post('/api/admin/notifications/read', adminAuth, (req,res)=>{ const db=readD
 app.get('/api/admin/logs', adminAuth, (req,res)=>{ const db=readDB(); res.json({logs:db.adminLogs}); });
 
 app.use((req,res)=>res.status(404).json({error:'Not found'}));
-app.listen(PORT, ()=>console.log(`AUSGG clean demo running on ${PORT}`));
+app.listen(PORT, ()=>console.log(`AUSGG premium full dashboard running on ${PORT}`));
