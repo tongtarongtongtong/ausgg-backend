@@ -1385,6 +1385,39 @@ app.post('/api/admin/auth/login', (req, res) => {
     }
   });
 });
+app.post('/api/admin/games', (req, res) => {
+  const db = readDB();
+
+  if (!db.games) db.games = [];
+
+  const game = {
+    id: 'GAME-' + Date.now(),
+    name: req.body.name || 'Untitled Game',
+    category: req.body.category || 'Casino',
+    thumbnail: req.body.thumbnail || '🎮',
+    description: req.body.description || '',
+    rtp: Number(req.body.rtp || 96),
+    minBet: Number(req.body.minBet || 0.01),
+    maxBet: Number(req.body.maxBet || 10000),
+    enabled: true,
+    createdAt: new Date().toISOString()
+  };
+
+  db.games.push(game);
+  writeDB(db);
+
+  res.json({ success: true, game });
+});
+
+app.get('/api/admin/games', (req, res) => {
+  const db = readDB();
+  res.json({ games: db.games || [] });
+});
+
+app.get('/api/games', (req, res) => {
+  const db = readDB();
+  res.json({ games: db.games || [] });
+});
 app.use((req,res)=>res.status(404).json({error:'Not found'}));
 
 app.listen(PORT,()=>{
