@@ -1,13 +1,1 @@
-{
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "bcryptjs": "latest",
-    "cors": "latest",
-    "express": "latest",
-    "jsonwebtoken": "latest",
-    "uuid": "latest"
-  },
-  "devDependencies": {}
-}
+{"scripts":{"start":"node server.js"},"dependencies":{"bcryptjs":"latest","cors":"latest","express":"latest","jsonwebtoken":"latest","uuid":"latest"}}
