@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AUSGG Master Admin</title>
+<title>AUSGG Admin v4</title>
 <style>
 :root{--bg:#0a0f1a;--bg2:#111827;--bg3:#1a2336;--bg4:#243047;--accent:#6366f1;--a2:#818cf8;--green:#22c55e;--red:#ef4444;--gold:#f59e0b;--blue:#3b82f6;--purple:#a855f7;--text:#e2e8f0;--muted:#64748b;--border:rgba(255,255,255,0.08);--r:8px}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -116,47 +116,25 @@ input:checked+.togs:before{transform:translateX(18px)}
 .tabs-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
 .tab-btn{padding:6px 14px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);transition:all .12s}
 .tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-
-/* AUSGG Pro Dashboard Update */
-.notif-wrap{position:relative}
-.notif-btn{position:relative}
-.notif-count{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border-radius:50%;font-size:9px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-weight:700}
-.notif-panel{display:none;position:absolute;right:0;top:34px;width:360px;max-height:430px;overflow:auto;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.45);z-index:2000}
-.notif-panel.show{display:block}
-.notif-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
-.notif-item{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px}
-.notif-item.unread{background:rgba(99,102,241,.08)}
-.notif-type{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px}
-.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-.quick-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px;cursor:pointer;transition:.12s}
-.quick-card:hover{background:var(--bg3);transform:translateY(-1px);border-color:var(--accent)}
-.quick-title{font-size:12px;font-weight:700;margin-bottom:4px}
-.quick-sub{font-size:10px;color:var(--muted)}
-.analytics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-@media(max-width:1000px){.quick-grid,.analytics-grid{grid-template-columns:repeat(2,1fr)}.notif-panel{right:-120px;width:320px}}
-
 </style>
 </head>
 <body>
 <div class="login-screen" id="ls">
   <div class="login-box">
     <div style="font-size:36px;margin-bottom:8px">🎰</div>
-    <h1>AUSGG Master Admin</h1>
-    <p>Master key or staff admin login</p>
-    <div class="lf"><label>Master Admin Key</label><input type="password" id="ak" placeholder="Enter master key" onkeydown="if(event.key==='Enter')login()"></div>
-    <div style="height:1px;background:var(--border);margin:14px 0"></div>
-    <div class="lf"><label>Staff Username</label><input type="text" id="staffUser" placeholder="optional"></div>
-    <div class="lf"><label>Staff Password</label><input type="password" id="staffPass" placeholder="optional" onkeydown="if(event.key==='Enter')login()"></div>
+    <h1>AUSGG Admin v4</h1>
+    <p>Authorized access only</p>
+    <div class="lf"><label>Admin Key</label><input type="password" id="ak" placeholder="Enter admin key" onkeydown="if(event.key==='Enter')login()"></div>
     <button class="login-btn" onclick="login()">🔐 Enter Dashboard</button>
-    <div class="err" id="lerr">❌ Login failed</div>
+    <div class="err" id="lerr">❌ Wrong key</div>
   </div>
 </div>
 
 <div class="app" id="app">
   <div class="topbar">
-    <div class="logo">🎰 AUSGG <span>MASTER</span></div>
+    <div class="logo">🎰 AUSGG <span>ADMIN v4</span></div>
     <div class="tr">
-      <div class="badge-online"><div class="dot"></div> Live</div><button class="btn bg" onclick="toggleSound()" id="soundBtn" style="font-size:11px">🔊 Sound</button><div class="notif-wrap"><button class="btn bg notif-btn" onclick="toggleNotifPanel()" style="font-size:11px">🔔 Alerts <span id="notifCount" class="notif-count" style="display:none">0</span></button><div id="notifPanel" class="notif-panel"><div class="notif-head"><strong>Notifications</strong><button class="btn bg" style="font-size:10px" onclick="markNotificationsRead()">Mark read</button></div><div id="notifList"><div class="er">No notifications yet</div></div></div></div><span id="adminRoleBadge" class="badge-online">Master</span>
+      <div class="badge-online"><div class="dot"></div> Live</div>
       <div class="rc">🔄 <span id="rc">10</span>s</div>
       <button class="btn bg" onclick="refreshAll()" style="font-size:11px">Refresh</button>
       <button class="btn bd" onclick="doLogout()" style="font-size:11px">Logout</button>
@@ -169,43 +147,38 @@ input:checked+.togs:before{transform:translateX(18px)}
         <div class="ni active" onclick="st('dashboard',this)"><span class="ic">📊</span> Dashboard</div>
         <div class="ni" onclick="st('livefeed',this)"><span class="ic">📡</span> Live Feed</div>
       </div>
-      <div class="ns master-only">
-        <div class="nl">Master</div>
-        <div class="ni" data-perm="master" onclick="st('master',this);loadAdmins();loadLogs();"><span class="ic">👑</span> Master Admin</div>
-        <div class="ni" data-perm="logs" onclick="st('logs',this);loadLogs();"><span class="ic">📜</span> Activity Logs</div>
-      </div>
       <div class="ns">
         <div class="nl">Users</div>
-        <div class="ni" onclick="st('users',this)" data-perm="users"><span class="ic">👥</span> All Users <span class="nb g" id="ub">0</span></div>
-        <div class="ni" onclick="st('pendingreg',this)" data-perm="users"><span class="ic">⏳</span> Pending Reg <span class="nb gold" id="prb">0</span></div>
+        <div class="ni" onclick="st('users',this)"><span class="ic">👥</span> All Users <span class="nb g" id="ub">0</span></div>
+        <div class="ni" onclick="st('pendingreg',this)"><span class="ic">⏳</span> Pending Reg <span class="nb gold" id="prb">0</span></div>
       </div>
       <div class="ns">
         <div class="nl">Requests</div>
-        <div class="ni" onclick="st('requests',this)" data-perm="deposits"><span class="ic">📥</span> All Requests <span class="nb" id="reqb">0</span></div>
-        <div class="ni" onclick="st('deposits',this)" data-perm="deposits"><span class="ic">⬇️</span> Deposits</div>
-        <div class="ni" onclick="st('withdrawals',this)" data-perm="withdrawals"><span class="ic">⬆️</span> Withdrawals <span class="nb" id="wdb">0</span></div>
-        <div class="ni" onclick="st('bets',this)" data-perm="bets"><span class="ic">🎲</span> All Bets</div>
+        <div class="ni" onclick="st('requests',this)"><span class="ic">📥</span> All Requests <span class="nb" id="reqb">0</span></div>
+        <div class="ni" onclick="st('deposits',this)"><span class="ic">⬇️</span> Deposits</div>
+        <div class="ni" onclick="st('withdrawals',this)"><span class="ic">⬆️</span> Withdrawals <span class="nb" id="wdb">0</span></div>
+        <div class="ni" onclick="st('bets',this)"><span class="ic">🎲</span> All Bets</div>
       </div>
       <div class="ns">
         <div class="nl">Bonuses</div>
-        <div class="ni" onclick="st('bonuses',this)" data-perm="bonuses"><span class="ic">🎁</span> Give Bonus</div>
-        <div class="ni" onclick="st('promos',this)" data-perm="promos"><span class="ic">🎟️</span> Promo Codes</div>
+        <div class="ni" onclick="st('bonuses',this)"><span class="ic">🎁</span> Give Bonus</div>
+        <div class="ni" onclick="st('promos',this)"><span class="ic">🎟️</span> Promo Codes</div>
       </div>
       <div class="ns">
         <div class="nl">Support</div>
-        <div class="ni" onclick="st('chat',this)" data-perm="chat"><span class="ic">💬</span> Live Chat <span class="nb" id="chatb">0</span></div>
-        <div class="ni" onclick="st('announcements',this)" data-perm="site"><span class="ic">📢</span> Announcements</div>
+        <div class="ni" onclick="st('chat',this)"><span class="ic">💬</span> Live Chat <span class="nb" id="chatb">0</span></div>
+        <div class="ni" onclick="st('announcements',this)"><span class="ic">📢</span> Announcements</div>
       </div>
       <div class="ns">
         <div class="nl">Site Controls</div>
-        <div class="ni" onclick="st('gameconfig',this)" data-perm="games"><span class="ic">⚙️</span> Game Config</div>
-        <div class="ni" onclick="st('gamemanager',this)" data-perm="games"><span class="ic">🎮</span> Game Manager</div>
-        <div class="ni" onclick="st('siteeditor',this)" data-perm="site"><span class="ic">🎨</span> Site Editor</div>
-        <div class="ni" onclick="st('depositsetup',this)" data-perm="site"><span class="ic">📋</span> Deposit Setup</div>
-        <div class="ni" onclick="st('wdform',this)" data-perm="site"><span class="ic">📝</span> Withdrawal Form</div>
-        <div class="ni" onclick="st('promotionseditor',this)" data-perm="promos"><span class="ic">🎁</span> Promotions</div>
-        <div class="ni" onclick="st('abouteditor',this)" data-perm="site"><span class="ic">ℹ️</span> About Us</div>
-        <div class="ni" onclick="st('themes',this)" data-perm="site"><span class="ic">🖌️</span> Themes</div>
+        <div class="ni" onclick="st('gameconfig',this)"><span class="ic">⚙️</span> Game Config</div>
+        <div class="ni" onclick="st('gamemanager',this)"><span class="ic">🎮</span> Game Manager</div>
+        <div class="ni" onclick="st('siteeditor',this)"><span class="ic">🎨</span> Site Editor</div>
+        <div class="ni" onclick="st('depositsetup',this)"><span class="ic">📋</span> Deposit Setup</div>
+        <div class="ni" onclick="st('wdform',this)"><span class="ic">📝</span> Withdrawal Form</div>
+        <div class="ni" onclick="st('promotionseditor',this)"><span class="ic">🎁</span> Promotions</div>
+        <div class="ni" onclick="st('abouteditor',this)"><span class="ic">ℹ️</span> About Us</div>
+        <div class="ni" onclick="st('themes',this)"><span class="ic">🖌️</span> Themes</div>
       </div>
     </div>
 
@@ -214,18 +187,6 @@ input:checked+.togs:before{transform:translateX(18px)}
       <!-- DASHBOARD -->
       <div class="tab active" id="tab-dashboard">
         <div class="pt">📊 Dashboard <span class="sub">Auto-refreshes every 10s</span></div>
-        <div class="quick-grid">
-          <div class="quick-card" onclick="st('users',document.querySelector('[onclick*=\'users\']'))"><div class="quick-title">👤 Add / manage users</div><div class="quick-sub">Create customers and edit balances</div></div>
-          <div class="quick-card" onclick="st('requests',document.querySelector('[onclick*=\'requests\']'))"><div class="quick-title">💳 Finance requests</div><div class="quick-sub">Approve deposits and withdrawals</div></div>
-          <div class="quick-card" onclick="st('chat',document.querySelector('[onclick*=\'chat\']'))"><div class="quick-title">💬 Live support</div><div class="quick-sub">Reply to player messages</div></div>
-          <div class="quick-card master-only" onclick="st('master',document.querySelector('[onclick*=\'master\']'));loadAdmins();loadLogs();"><div class="quick-title">👑 Staff admins</div><div class="quick-sub">Create admins and permissions</div></div>
-        </div>
-        <div class="analytics-grid">
-          <div class="sc"><div class="sl">Pending Deposit $</div><div class="sv" id="d-pdep" style="color:var(--green)">—</div></div>
-          <div class="sc"><div class="sl">Pending Withdraw $</div><div class="sv" id="d-pwdamt" style="color:var(--red)">—</div></div>
-          <div class="sc"><div class="sl">Total User Balance</div><div class="sv" id="d-bal" style="color:var(--gold)">—</div></div>
-          <div class="sc"><div class="sl">Unread Alerts</div><div class="sv" id="d-alerts" style="color:var(--a2)">0</div></div>
-        </div>
         <div class="sg">
           <div class="sc"><div class="sl">Users</div><div class="sv" id="d-users" style="color:var(--a2)">—</div></div>
           <div class="sc"><div class="sl">Pending Requests</div><div class="sv" id="d-reqs" style="color:var(--gold)">—</div></div>
@@ -268,37 +229,6 @@ input:checked+.togs:before{transform:translateX(18px)}
           <input type="text" id="usearch" placeholder="🔍 Search username, email, or Player ID..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 12px;font-size:12px;outline:none" oninput="filterUsers()">
         </div>
         <div class="tw"><div id="users-table"><div class="er">Loading...</div></div></div>
-      </div>
-
-
-      <!-- MASTER ADMIN -->
-      <div class="tab" id="tab-master">
-        <div class="pt">👑 Master Admin <span class="sub">Create staff admins and choose permissions</span></div>
-        <div class="g2">
-          <div class="panel">
-            <h3>Create Staff Admin</h3>
-            <div class="fr"><div class="f"><label>Name</label><input id="sa-name" placeholder="Support Staff"></div><div class="f"><label>Username</label><input id="sa-username" placeholder="support1"></div></div>
-            <div class="f"><label>Password</label><input id="sa-password" type="password" placeholder="Minimum 6 characters"></div>
-            <div class="f"><label>Permissions</label><div id="sa-perms" class="g3"></div></div>
-            <button class="btn bp" onclick="createStaffAdmin()">➕ Create Staff Admin</button>
-          </div>
-          <div class="panel">
-            <h3>System Sounds</h3>
-            <div class="tw2"><div><div class="tl">Message sound</div><div class="ts">Plays when a new chat message arrives</div></div><label class="tog"><input id="sound-chat" type="checkbox" checked><span class="togs"></span></label></div>
-            <div class="tw2"><div><div class="tl">Deposit sound</div><div class="ts">Plays when a new deposit request arrives</div></div><label class="tog"><input id="sound-deposit" type="checkbox" checked><span class="togs"></span></label></div>
-            <div class="tw2"><div><div class="tl">Withdrawal sound</div><div class="ts">Plays when a new withdrawal request arrives</div></div><label class="tog"><input id="sound-withdrawal" type="checkbox" checked><span class="togs"></span></label></div>
-            <button class="btn bg" onclick="playAdminSound('chat')">Test Chat</button>
-            <button class="btn bg" onclick="playAdminSound('deposit')">Test Deposit</button>
-            <button class="btn bg" onclick="playAdminSound('withdrawal')">Test Withdrawal</button>
-          </div>
-        </div>
-        <div class="tw"><div class="th"><h3>Staff Admins</h3><button class="btn bg" onclick="loadAdmins()">Refresh</button></div><div id="admins-table"><div class="er">Loading...</div></div></div>
-      </div>
-
-      <!-- ACTIVITY LOGS -->
-      <div class="tab" id="tab-logs">
-        <div class="pt">📜 Activity Logs <span class="sub">Admin actions and system events</span></div>
-        <div class="tw"><div class="th"><h3>Recent Activity</h3><button class="btn bg" onclick="loadLogs()">Refresh</button></div><div id="logs-table"><div class="er">Loading...</div></div></div>
       </div>
 
       <!-- PENDING REG -->
@@ -769,48 +699,28 @@ input:checked+.togs:before{transform:translateX(18px)}
 </div>
 
 <script>
-const API=(location.protocol==='file:'?'http://localhost:3001':location.origin)+'/api';
-let AK='', adminToken='', currentAdmin=null;
+const API='http://localhost:3001/api', AK='ausgg_admin_2024';
 let allUsers=[], allReqs=[], currentChat=null, refreshInt=null, countdown=10;
 let currentUserId=null;
-let soundOn=localStorage.getItem('ausggSound')!=='off';
-let lastSeen={chat:0,deposit:0,withdrawal:0};
-
 
 async function api(m,p,b=null){
   try{
-    const headers={'Content-Type':'application/json'};
-    if(AK) headers['x-admin-key']=AK;
-    if(adminToken) headers['x-admin-token']=adminToken;
-    const r=await fetch(API+p,{method:m,headers,body:b?JSON.stringify(b):null});
-    const data=await r.json().catch(()=>({}));
-    if(!r.ok) return {...data,error:data.error||('HTTP '+r.status)};
-    return data;
-  }catch(e){return{error:'Server error: '+e.message};}
+    const r=await fetch(API+p,{method:m,headers:{'Content-Type':'application/json','x-admin-key':AK},body:b?JSON.stringify(b):null});
+    return await r.json();
+  }catch(e){return{};}
 }
 
-
-
-async function login(){
-  const key=document.getElementById('ak').value.trim();
-  const username=document.getElementById('staffUser')?.value?.trim();
-  const password=document.getElementById('staffPass')?.value;
-  const err=document.getElementById('lerr'); err.style.display='none';
-  let data={};
-  if(key){ data=await api('POST','/admin/auth/login',{adminKey:key}); }
-  else { data=await api('POST','/admin/auth/login',{username,password}); }
-  if(data.error){ err.textContent='❌ '+data.error; err.style.display='block'; return; }
-  AK=key||''; adminToken=data.token||''; currentAdmin=data.admin||null;
-  document.getElementById('ls').style.display='none';
-  document.getElementById('app').style.display='flex';
-  document.getElementById('adminRoleBadge').textContent=(currentAdmin?.role==='master'?'👑 Master':'👤 Staff');
-  applyPermissions(); setupPermCheckboxes();
-  refreshAll(); loadAdmins(); loadLogs(); pollNotifications();
-  api('GET','/admin/assign-ids');
-  refreshInt=setInterval(()=>{countdown--;document.getElementById('rc').textContent=countdown+'s';if(countdown<=0){refreshAll();pollNotifications();countdown=10;}},1000);
+function login(){
+  if(document.getElementById('ak').value===AK){
+    document.getElementById('ls').style.display='none';
+    document.getElementById('app').style.display='flex';
+    refreshAll();
+    api('GET','/admin/assign-ids');
+    refreshInt=setInterval(()=>{countdown--;document.getElementById('rc').textContent=countdown+'s';if(countdown<=0){refreshAll();countdown=10;}},1000);
+  }else{document.getElementById('lerr').style.display='block';}
 }
 document.getElementById('ak').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
-function doLogout(){AK='';adminToken='';currentAdmin=null;document.getElementById('ls').style.display='flex';document.getElementById('app').style.display='none';clearInterval(refreshInt);}
+function doLogout(){document.getElementById('ls').style.display='flex';document.getElementById('app').style.display='none';clearInterval(refreshInt);}
 
 function notif(msg,type='success'){
   const n=document.getElementById('notif');
@@ -822,111 +732,6 @@ function notif(msg,type='success'){
   setTimeout(()=>{d.style.opacity='0';d.style.transition='opacity .3s';setTimeout(()=>d.remove(),300);},3000);
 }
 
-
-function toggleNotifPanel(){document.getElementById('notifPanel')?.classList.toggle('show');}
-async function markNotificationsRead(){
-  await api('POST','/admin/notifications/read',{});
-  await loadNotificationCenter();
-  notif('Notifications marked read','info');
-}
-async function loadNotificationCenter(){
-  const d=await api('GET','/admin/notifications');
-  const ns=d.notifications||[];
-  const unread=ns.filter(n=>!n.read).length;
-  const badge=document.getElementById('notifCount');
-  if(badge){badge.textContent=unread; badge.style.display=unread?'flex':'none';}
-  const da=document.getElementById('d-alerts'); if(da) da.textContent=unread;
-  const list=document.getElementById('notifList');
-  if(list){
-    list.innerHTML=ns.slice(0,25).map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div class="notif-type">${n.type||'info'} • ${ago(n.createdAt)}</div><div>${n.message||n.detail||'New notification'}</div></div>`).join('') || '<div class="er">No notifications yet</div>';
-  }
-}
-
-function toggleSound(){
-  soundOn=!soundOn; localStorage.setItem('ausggSound',soundOn?'on':'off');
-  document.getElementById('soundBtn').textContent=soundOn?'🔊 Sound':'🔇 Muted';
-}
-function playAdminSound(type){
-  if(!soundOn) return;
-  const map={chat:880,deposit:660,withdrawal:440,info:520};
-  const freq=map[type]||520;
-  try{
-    const AudioCtx=window.AudioContext||window.webkitAudioContext;
-    const ctx=new AudioCtx(); const osc=ctx.createOscillator(); const gain=ctx.createGain();
-    osc.type='sine'; osc.frequency.value=freq; gain.gain.value=0.06;
-    osc.connect(gain); gain.connect(ctx.destination); osc.start();
-    setTimeout(()=>{osc.stop();ctx.close();},180);
-    if(type==='withdrawal') setTimeout(()=>playAdminSound('info'),220);
-  }catch(e){}
-}
-function allowed(perm){return !currentAdmin || currentAdmin.role==='master' || (currentAdmin.permissions||[]).includes(perm);}
-function applyPermissions(){
-  document.querySelectorAll('[data-perm]').forEach(el=>{
-    const p=el.getAttribute('data-perm');
-    el.style.display=allowed(p)?'flex':'none';
-  });
-  document.querySelectorAll('.master-only').forEach(el=>el.style.display=(currentAdmin?.role==='master')?'block':'none');
-  document.getElementById('soundBtn').textContent=soundOn?'🔊 Sound':'🔇 Muted';
-}
-const PERM_LABELS={dashboard:'Dashboard',users:'Users',addCustomer:'Add Customer',deposits:'Deposits',withdrawals:'Withdrawals',bets:'Bets',bonuses:'Bonuses',promos:'Promos',chat:'Chat',site:'Site Editor',games:'Games',logs:'Activity Logs'};
-function setupPermCheckboxes(){
-  const box=document.getElementById('sa-perms'); if(!box) return;
-  box.innerHTML=Object.entries(PERM_LABELS).filter(([k])=>k!=='dashboard').map(([k,v])=>`<label style="font-size:11px;background:var(--bg3);padding:8px;border-radius:7px;border:1px solid var(--border);display:flex;gap:6px;align-items:center"><input type="checkbox" class="sa-perm" value="${k}" ${k!=='logs'?'checked':''}> ${v}</label>`).join('');
-}
-async function createStaffAdmin(){
-  const name=document.getElementById('sa-name').value.trim();
-  const username=document.getElementById('sa-username').value.trim();
-  const password=document.getElementById('sa-password').value;
-  const permissions=[...document.querySelectorAll('.sa-perm:checked')].map(x=>x.value);
-  const d=await api('POST','/admin/admins',{name,username,password,permissions});
-  if(d.error) return notif(d.error,'error');
-  notif('✅ Staff admin created');
-  document.getElementById('sa-name').value='';document.getElementById('sa-username').value='';document.getElementById('sa-password').value='';
-  loadAdmins(); loadLogs();
-}
-async function loadAdmins(){
-  const el=document.getElementById('admins-table'); if(!el) return;
-  if(currentAdmin?.role!=='master'){ el.innerHTML='<div class="er">Master only</div>'; return; }
-  const d=await api('GET','/admin/admins'); const arr=d.admins||[];
-  el.innerHTML=`<table><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Permissions</th><th>Status</th><th>Last Login</th></tr></thead><tbody>${arr.map(a=>`<tr><td>${a.name||'—'}</td><td><strong>${a.username}</strong></td><td>${a.role}</td><td style="max-width:300px;font-size:10px;color:var(--muted)">${(a.permissions||[]).join(', ')}</td><td><span class="st ${a.active!==false?'active':'banned'}">${a.active!==false?'active':'disabled'}</span></td><td>${fmtD(a.lastLogin)}</td></tr>`).join('')||'<tr><td colspan="6" class="er">No staff admins</td></tr>'}</tbody></table>`;
-}
-async function loadLogs(){
-  const el=document.getElementById('logs-table'); if(!el) return;
-  const d=await api('GET','/admin/logs'); const logs=d.logs||[];
-  el.innerHTML=`<table><thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Detail</th></tr></thead><tbody>${logs.map(l=>`<tr><td>${fmtD(l.createdAt)}</td><td>${l.admin||'—'}</td><td><strong>${l.action}</strong></td><td>${l.detail||''}</td></tr>`).join('')||'<tr><td colspan="4" class="er">No logs yet</td></tr>'}</tbody></table>`;
-}
-async function pollNotifications(){
-  const d=await api('GET','/admin/notifications');
-  const ns=d.notifications||[];
-  for(const n of ns){
-    const t=Date.parse(n.createdAt)||0;
-    if(t>lastSeen[n.type]){
-      lastSeen[n.type]=t;
-      if(n.type==='chat' && document.getElementById('sound-chat')?.checked) playAdminSound('chat');
-      if(n.type==='deposit' && document.getElementById('sound-deposit')?.checked) playAdminSound('deposit');
-      if(n.type==='withdrawal' && document.getElementById('sound-withdrawal')?.checked) playAdminSound('withdrawal');
-    }
-  }
-  loadNotificationCenter();
-}
-function openAddUser(){document.getElementById('add-user-modal').classList.add('show');}
-async function addCustomer(){
-  const firstName=document.getElementById('au-fn').value.trim();
-  const lastName=document.getElementById('au-ln').value.trim();
-  const username=document.getElementById('au-username').value.trim();
-  const email=document.getElementById('au-email').value.trim();
-  const password=document.getElementById('au-password').value;
-  const phone=document.getElementById('au-phone').value.trim();
-  const balance=parseFloat(document.getElementById('au-balance').value)||1000;
-  const bankInfo={bankName:document.getElementById('au-bank').value.trim(),accountNumber:document.getElementById('au-acc').value.trim(),bsb:document.getElementById('au-bsb').value.trim(),accountHolder:document.getElementById('au-holder').value.trim()};
-  const er=document.getElementById('au-error'); er.style.display='none';
-  const d=await api('POST','/admin/add-customer',{firstName,lastName,username,email,password,phone,balance,bankInfo});
-  if(d.error){er.textContent=d.error;er.style.display='block';return;}
-  notif('✅ Customer created'); closeModal('add-user-modal'); loadUsers(); loadDashboard(); loadLogs();
-  ['au-fn','au-ln','au-username','au-email','au-password','au-phone','au-bank','au-acc','au-bsb','au-holder'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('au-balance').value='1000';
-}
-
 function st(name,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
@@ -936,7 +741,7 @@ function st(name,el){
 
 function refreshAll(){
   loadDashboard();loadUsers();loadPendingReg();loadRequests();loadTransactions();
-  loadBets();loadChats();loadGameConfig();loadSiteConfig();loadDI();loadGames();loadAnn();loadPromos();pollNotifications();loadNotificationCenter();
+  loadBets();loadChats();loadGameConfig();loadSiteConfig();loadDI();loadGames();loadAnn();loadPromos();
   countdown=10;
 }
 
@@ -955,12 +760,6 @@ async function loadDashboard(){
   document.getElementById('d-bets').textContent=b.length;
   document.getElementById('d-wag').textContent=fmt(b.reduce((s,x)=>s+x.betAmount,0));
   const pw=r.filter(x=>x.type==='withdrawal_request'&&x.status==='pending').length;
-  const pdepAmt=r.filter(x=>x.type==='deposit_request'&&x.status==='pending').reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
-  const pwdAmt=r.filter(x=>x.type==='withdrawal_request'&&x.status==='pending').reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
-  const totalBal=u.reduce((s,x)=>s+(parseFloat(x.balance)||0),0);
-  if(document.getElementById('d-pdep')) document.getElementById('d-pdep').textContent=fmt(pdepAmt);
-  if(document.getElementById('d-pwdamt')) document.getElementById('d-pwdamt').textContent=fmt(pwdAmt);
-  if(document.getElementById('d-bal')) document.getElementById('d-bal').textContent=fmt(totalBal);
   document.getElementById('d-wd').textContent=pw;
   document.getElementById('wdb').textContent=pw;
   document.getElementById('reqb').textContent=r.filter(x=>x.status==='pending').length;
