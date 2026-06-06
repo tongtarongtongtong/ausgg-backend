@@ -417,6 +417,7 @@
       </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Account</div>
+        <div class="game-link" onclick="showPage('profile', this)"><span class="icon">👤</span> My Profile</div>
         <div class="game-link" onclick="showPage('stats', this)"><span class="icon">📊</span> My Stats</div>
         <div class="game-link" onclick="showPage('wallet', this)"><span class="icon">💳</span> Wallet</div>
         <div class="game-link" onclick="showPage('bet-history', this)"><span class="icon">🎲</span> Bet History</div>
@@ -728,6 +729,78 @@
         </div>
       </div>
 
+      <!-- PROFILE PAGE -->
+      <div class="page" id="page-profile">
+        <div class="page-header"><h2>👤 My Profile</h2><span class="tag">Your account details</span></div>
+        <div style="max-width:800px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <!-- Personal Info -->
+          <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)">👤 Personal Information</div>
+            <div id="profile-info-display">
+              <div style="display:grid;gap:10px;font-size:13px">
+                <div><div style="font-size:11px;color:var(--text-muted)">PLAYER ID</div><div style="font-family:monospace;font-weight:700;color:var(--accent)" id="prof-playerid">—</div></div>
+                <div><div style="font-size:11px;color:var(--text-muted)">FULL NAME</div><div style="font-weight:600" id="prof-name">—</div></div>
+                <div><div style="font-size:11px;color:var(--text-muted)">USERNAME</div><div style="font-weight:600" id="prof-username">—</div></div>
+                <div><div style="font-size:11px;color:var(--text-muted)">EMAIL</div><div id="prof-email">—</div></div>
+                <div><div style="font-size:11px;color:var(--text-muted)">PHONE</div><div id="prof-phone">—</div></div>
+                <div><div style="font-size:11px;color:var(--text-muted)">MEMBER SINCE</div><div id="prof-joined">—</div></div>
+              </div>
+            </div>
+            <div style="height:1px;background:var(--border);margin:14px 0"></div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:10px">✏️ Edit Details</div>
+            <div style="display:grid;gap:8px">
+              <div>
+                <div class="field-label">First Name</div>
+                <input class="w-input" type="text" id="edit-firstname" placeholder="First name">
+              </div>
+              <div>
+                <div class="field-label">Last Name</div>
+                <input class="w-input" type="text" id="edit-lastname" placeholder="Last name">
+              </div>
+              <div>
+                <div class="field-label">Phone (Australian)</div>
+                <div style="display:flex;gap:6px;align-items:center">
+                  <div style="background:var(--bg-tertiary);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;font-size:13px;color:var(--text-secondary);white-space:nowrap">🇦🇺 +61</div>
+                  <input class="w-input" type="tel" id="edit-phone" placeholder="4XX XXX XXX" style="flex:1">
+                </div>
+              </div>
+            </div>
+            <button class="big-bet-btn green" style="margin-top:12px" onclick="saveProfile()">💾 Save Changes</button>
+          </div>
+
+          <!-- Bank Details -->
+          <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)">🏦 Bank Details</div>
+            <div style="display:grid;gap:10px;font-size:13px;margin-bottom:14px">
+              <div><div style="font-size:11px;color:var(--text-muted)">BANK NAME</div><div style="font-weight:600" id="prof-bank-name">—</div></div>
+              <div><div style="font-size:11px;color:var(--text-muted)">ACCOUNT NUMBER</div><div style="font-weight:600" id="prof-bank-acc">—</div></div>
+              <div><div style="font-size:11px;color:var(--text-muted)">BSB</div><div style="font-weight:600" id="prof-bank-bsb">—</div></div>
+              <div><div style="font-size:11px;color:var(--text-muted)">ACCOUNT HOLDER</div><div style="font-weight:600" id="prof-bank-holder">—</div></div>
+            </div>
+            <div style="height:1px;background:var(--border);margin:14px 0"></div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:10px">✏️ Update Bank Details</div>
+            <div style="display:grid;gap:8px">
+              <div><div class="field-label">Bank Name</div><input class="w-input" type="text" id="edit-bank-name" placeholder="e.g. ANZ, Commonwealth"></div>
+              <div><div class="field-label">Account Number</div><input class="w-input" type="text" id="edit-bank-acc" placeholder="123456789"></div>
+              <div><div class="field-label">BSB</div><input class="w-input" type="text" id="edit-bank-bsb" placeholder="062-000" maxlength="7"></div>
+              <div><div class="field-label">Account Holder Name</div><input class="w-input" type="text" id="edit-bank-holder" placeholder="Full name as on account"></div>
+            </div>
+            <button class="big-bet-btn green" style="margin-top:12px" onclick="saveBankProfile()">🏦 Update Bank Details</button>
+          </div>
+
+          <!-- Change Password -->
+          <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;grid-column:1/-1">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)">🔒 Change Password</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+              <div><div class="field-label">Current Password</div><input class="w-input" type="password" id="cp-current" placeholder="Current password"></div>
+              <div><div class="field-label">New Password</div><input class="w-input" type="password" id="cp-new" placeholder="At least 6 characters"></div>
+              <div><div class="field-label">Confirm New Password</div><input class="w-input" type="password" id="cp-confirm" placeholder="Repeat new password"></div>
+            </div>
+            <button class="big-bet-btn green" style="margin-top:12px;max-width:300px" onclick="changePassword()">🔒 Change Password</button>
+          </div>
+        </div>
+      </div>
+
       <!-- PROMOTIONS PAGE -->
       <div class="page" id="page-promotions">
         <div id="promos-hero-section"></div>
@@ -914,11 +987,11 @@
                 </div>
                 <div id="receipt-preview" style="display:none;margin-bottom:12px">
                   <div style="font-size:12px;color:var(--accent);margin-bottom:6px">✅ Receipt attached: <span id="receipt-name"></span></div>
-                  <img id="receipt-img-preview" style="max-width:100%;max-height:150px;border-radius:8px;border:1px solid var(--border)" src="" alt="">
+                  <img id="receipt-img-preview" style="max-width:100%;max-height:120px;border-radius:8px;border:1px solid var(--border)" src="" alt="">
                 </div>
-                <div style="display:flex;gap:8px">
-                  <button class="big-bet-btn" style="background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border);flex:0 0 auto;padding:12px 16px" onclick="backToDepStep1()">← Back</button>
-                  <button class="big-bet-btn green" onclick="submitDepositRequest()">📤 Submit Deposit Request</button>
+                <div style="display:grid;grid-template-columns:auto 1fr;gap:8px;margin-top:12px">
+                  <button style="background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:14px;font-weight:700;cursor:pointer" onclick="backToDepStep1()">← Back</button>
+                  <button style="background:var(--accent);color:#0f1923;border:none;border-radius:var(--radius);padding:12px;font-size:14px;font-weight:700;cursor:pointer;width:100%" onclick="submitDepositRequest()">📤 Submit Deposit Request</button>
                 </div>
               </div><!-- end step2 -->
 
@@ -1016,6 +1089,7 @@
       <div class="modal-field"><label>Username or Email</label><input type="text" id="login-identifier" placeholder="Enter username or email" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div class="modal-field"><label>Password</label><input type="password" id="login-password" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="modal-submit" id="login-btn" onclick="doLogin()">Log In</button>
+      <div class="modal-switch" style="margin-bottom:8px"><span onclick="switchAuth('forgot')" style="color:var(--text-muted);font-size:12px">Forgot password?</span></div>
       <div class="modal-switch">Don't have an account? <span onclick="switchAuth('register')">Register</span></div>
     </div>
 
@@ -1048,6 +1122,30 @@
       <div class="modal-field"><label>Account Holder Name *</label><input type="text" id="reg-bank-holder" placeholder="Full name as on bank account"></div>
       <button class="modal-submit" id="register-btn" onclick="doRegister()">Send Verification Code</button>
       <div class="modal-switch">Already have an account? <span onclick="switchAuth('login')">Log In</span></div>
+    </div>
+
+    <!-- FORGOT PASSWORD FORM -->
+    <div id="form-forgot" style="display:none">
+      <div class="modal-title">Forgot Password 🔑</div>
+      <div class="modal-sub">Enter your email to receive a reset code</div>
+      <div class="modal-field"><label>Email Address</label><input type="email" id="forgot-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doForgotSend()"></div>
+      <button class="modal-submit" id="forgot-send-btn" onclick="doForgotSend()">📧 Send Reset Code</button>
+      <div class="modal-switch"><span onclick="switchAuth('login')">← Back to Login</span></div>
+    </div>
+
+    <!-- RESET PASSWORD FORM -->
+    <div id="form-reset" style="display:none">
+      <div class="modal-title">Reset Password 🔒</div>
+      <div class="modal-sub" id="reset-sub">Enter the code sent to your email</div>
+      <div style="background:rgba(0,231,1,0.05);border:1px solid rgba(0,231,1,0.2);border-radius:8px;padding:12px;margin-bottom:14px;text-align:center">
+        <div style="font-size:11px;color:var(--text-muted)">Code sent to</div>
+        <div style="font-weight:700;color:var(--accent)" id="reset-email-display"></div>
+      </div>
+      <div class="modal-field"><label>Reset Code</label><input type="text" id="reset-code" placeholder="000000" maxlength="6" style="font-size:22px;letter-spacing:8px;text-align:center" onkeydown="if(event.key==='Enter')doResetPassword()"></div>
+      <div class="modal-field"><label>New Password</label><input type="password" id="reset-new-pass" placeholder="At least 6 characters" onkeydown="if(event.key==='Enter')doResetPassword()"></div>
+      <div class="modal-field"><label>Confirm New Password</label><input type="password" id="reset-confirm-pass" placeholder="Repeat new password" onkeydown="if(event.key==='Enter')doResetPassword()"></div>
+      <button class="modal-submit" id="reset-btn" onclick="doResetPassword()">🔒 Reset Password</button>
+      <div class="modal-switch"><span onclick="resendResetCode()">Resend code</span> &nbsp;•&nbsp; <span onclick="switchAuth('login')">← Back</span></div>
     </div>
 
     <!-- VERIFY FORM -->
@@ -1594,6 +1692,7 @@ function showPage(name, linkEl) {
   if (name === 'wallet') { loadDepositInstructions(); loadWithdrawalForm(); }
   if (name === 'chat-page') loadChatPage();
   if (name === 'requests-page') loadMyRequests();
+  if (name === 'profile') loadProfilePage();
   if (name === 'promotions') loadPromotions();
   if (name === 'about') loadAboutPage();
   renderLiveBets();
@@ -1803,9 +1902,9 @@ renderTxHistory();
 
 
 // ═══════════════════════════════════════════════════════════
-//  API ENGINE — connects to http://localhost:3001
+//  API ENGINE — connects to https://ausgg-backend-production.up.railway.app
 // ═══════════════════════════════════════════════════════════
-const API_URL = 'http://localhost:3001/api';
+const API_URL = 'https://ausgg-backend-production.up.railway.app/api';
 let authToken = localStorage.getItem('ausgg_token') || null;
 let currentUser = null;
 
@@ -1842,7 +1941,7 @@ function showApiOfflineWarning() {
 
 async function checkApiStatus() {
   try {
-    const res = await fetch('http://localhost:3001/');
+    const res = await fetch('https://ausgg-backend-production.up.railway.app/');
     if (res.ok) {
       const banner = document.getElementById('api-offline-banner');
       if (banner) banner.remove();
@@ -1862,8 +1961,10 @@ function showAuth(mode) {
 }
 function closeAuth() { document.getElementById('auth-modal').classList.remove('show'); }
 function switchAuth(mode) {
-  document.getElementById('form-login').style.display = mode === 'login' ? 'block' : 'none';
-  document.getElementById('form-register').style.display = mode === 'register' ? 'block' : 'none';
+  ['login','register','verify','forgot','reset'].forEach(m => {
+    const el = document.getElementById('form-'+m);
+    if (el) el.style.display = m === mode ? 'block' : 'none';
+  });
   document.getElementById('auth-error').style.display = 'none';
 }
 
@@ -2123,7 +2224,7 @@ function loadSavedBankDetails() {
 // ═══════════════════════════════════════════════════════════
 async function loadDepositInstructions() {
   try {
-    const data = await fetch('http://localhost:3001/api/deposit-instructions').then(r=>r.json()).catch(()=>({}));
+    const data = await fetch('https://ausgg-backend-production.up.railway.app/api/deposit-instructions').then(r=>r.json()).catch(()=>({}));
     const cfg = data.instructions || {};
 
     // Card instructions
@@ -2260,7 +2361,7 @@ async function sendChatMsg() {
   renderChatMessages();
 
   try {
-    await fetch('http://localhost:3001/api/chat/send', {
+    await fetch('https://ausgg-backend-production.up.railway.app/api/chat/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -2269,7 +2370,7 @@ async function sendChatMsg() {
       body: JSON.stringify({ text })
     });
     // Reload to confirm saved
-    const data = await fetch('http://localhost:3001/api/chat/history', {
+    const data = await fetch('https://ausgg-backend-production.up.railway.app/api/chat/history', {
       headers: { 'Authorization': 'Bearer ' + authToken }
     }).then(r => r.json());
     chatMessages = data.messages || [];
@@ -2286,7 +2387,7 @@ async function sendChatMsg() {
 async function pollChatForReplies() {
   if (!authToken) return;
   try {
-    const res = await fetch('http://localhost:3001/api/chat/history', {
+    const res = await fetch('https://ausgg-backend-production.up.railway.app/api/chat/history', {
       headers: { 'Authorization': 'Bearer ' + authToken }
     });
     const data = await res.json();
@@ -2316,7 +2417,7 @@ async function pollChatForReplies() {
 // ═══════════════════════════════════════════════════════════
 async function loadSiteConfig() {
   try {
-    const data = await fetch('http://localhost:3001/api/site-config').then(r=>r.json()).catch(()=>({}));
+    const data = await fetch('https://ausgg-backend-production.up.railway.app/api/site-config').then(r=>r.json()).catch(()=>({}));
     const cfg = data.config || {};
 
     // Site name & logo
@@ -2410,7 +2511,7 @@ async function loadSiteConfig() {
     }
 
     // Maintenance mode
-    const gameData = await fetch('http://localhost:3001/api/config').then(r=>r.json()).catch(()=>({}));
+    const gameData = await fetch('https://ausgg-backend-production.up.railway.app/api/config').then(r=>r.json()).catch(()=>({}));
     if (gameData.config?.global?.maintenance) {
       document.getElementById('maintenance-overlay').classList.add('show');
     }
@@ -2522,7 +2623,7 @@ async function loadChatHistory() {
     return;
   }
   try {
-    const res = await fetch('http://localhost:3001/api/chat/history', {
+    const res = await fetch('https://ausgg-backend-production.up.railway.app/api/chat/history', {
       headers: { 'Authorization': 'Bearer ' + authToken }
     });
     const data = await res.json();
@@ -2607,7 +2708,7 @@ async function loadChatPage() {
     return;
   }
   try {
-    const res = await fetch('http://localhost:3001/api/chat/history', { headers:{'Authorization':'Bearer '+authToken} });
+    const res = await fetch('https://ausgg-backend-production.up.railway.app/api/chat/history', { headers:{'Authorization':'Bearer '+authToken} });
     const data = await res.json();
     const msgs = data.messages || [];
     const el = document.getElementById('chat-page-msgs');
@@ -2634,7 +2735,7 @@ async function sendPageChat() {
   el.innerHTML += `<div style="max-width:80%;padding:9px 13px;border-radius:10px;font-size:13px;background:rgba(0,231,1,0.1);border:1px solid rgba(0,231,1,0.2);align-self:flex-end">${text}</div>`;
   el.scrollTop = el.scrollHeight;
   try {
-    await fetch('http://localhost:3001/api/chat/send', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken}, body:JSON.stringify({text}) });
+    await fetch('https://ausgg-backend-production.up.railway.app/api/chat/send', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken}, body:JSON.stringify({text}) });
     setTimeout(loadChatPage, 500);
   } catch(e) { toast('Could not send message', false); }
 }
@@ -2700,7 +2801,7 @@ async function goToDepStep2() {
 
   // Load deposit instructions
   try {
-    const data = await fetch('http://localhost:3001/api/deposit-instructions').then(r=>r.json());
+    const data = await fetch('https://ausgg-backend-production.up.railway.app/api/deposit-instructions').then(r=>r.json());
     const di = data.instructions || {};
     const method = Wallet.depMethod || 'card';
     let instrHtml = '';
@@ -2812,7 +2913,7 @@ function resetDepositFlow() {
 let wdFormFields = [];
 async function loadWithdrawalForm() {
   try {
-    const data = await fetch('http://localhost:3001/api/withdrawal-form').then(r=>r.json());
+    const data = await fetch('https://ausgg-backend-production.up.railway.app/api/withdrawal-form').then(r=>r.json());
     wdFormFields = data.fields || [];
     renderWithdrawalForm();
   } catch(e) {}
@@ -2844,7 +2945,7 @@ function getWithdrawalFormData() {
 // ══════════════════════════════════════════════════════════
 async function loadPromotions() {
   try {
-    const data = await fetch('http://localhost:3001/api/promotions').then(r=>r.json());
+    const data = await fetch('https://ausgg-backend-production.up.railway.app/api/promotions').then(r=>r.json());
     const p = data.promotions || {};
     
     // Hero banner
@@ -2933,7 +3034,7 @@ function claimBonus(code, title) {
 // ══════════════════════════════════════════════════════════
 async function loadAboutPage() {
   try {
-    const data = await fetch('http://localhost:3001/api/about').then(r=>r.json());
+    const data = await fetch('https://ausgg-backend-production.up.railway.app/api/about').then(r=>r.json());
     const a = data.about || {};
 
     // Hero
@@ -3042,7 +3143,7 @@ async function sendPageChat() {
   clearChatImg();
 
   try {
-    await fetch('http://localhost:3001/api/chat/send-media', {
+    await fetch('https://ausgg-backend-production.up.railway.app/api/chat/send-media', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
       body: JSON.stringify({ text, image: imgToSend, imageName: imgNameToSend })
@@ -3069,12 +3170,12 @@ async function sendChatMsg() {
   renderChatMessages();
 
   try {
-    await fetch('http://localhost:3001/api/chat/send-media', {
+    await fetch('https://ausgg-backend-production.up.railway.app/api/chat/send-media', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
       body: JSON.stringify({ text, image: imgToSend, imageName: imgNameToSend })
     });
-    const data = await fetch('http://localhost:3001/api/chat/history',{headers:{'Authorization':'Bearer '+authToken}}).then(r=>r.json());
+    const data = await fetch('https://ausgg-backend-production.up.railway.app/api/chat/history',{headers:{'Authorization':'Bearer '+authToken}}).then(r=>r.json());
     chatMessages = data.messages || [];
     renderChatMessages();
   } catch(e) { console.warn('Chat send failed'); }
@@ -3110,7 +3211,7 @@ async function loadChatPage() {
     return;
   }
   try {
-    const res = await fetch('http://localhost:3001/api/chat/history',{headers:{'Authorization':'Bearer '+authToken}});
+    const res = await fetch('https://ausgg-backend-production.up.railway.app/api/chat/history',{headers:{'Authorization':'Bearer '+authToken}});
     const data = await res.json();
     const msgs = data.messages || [];
     const el = document.getElementById('chat-page-msgs');
@@ -3128,6 +3229,156 @@ async function loadChatPage() {
     }).join('');
     el.scrollTop = el.scrollHeight;
   } catch(e) {}
+}
+
+
+// ══════════════════════════════════════════════════════════
+//  FORGOT PASSWORD
+// ══════════════════════════════════════════════════════════
+let forgotEmail = '';
+
+async function doForgotSend() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) return showAuthError('Enter your email address');
+  const btn = document.getElementById('forgot-send-btn');
+  btn.disabled = true; btn.textContent = '⏳ Sending...';
+  try {
+    const data = await apiCall('POST', '/auth/forgot-password', { email }, false);
+    forgotEmail = email;
+    document.getElementById('reset-email-display').textContent = email;
+    if (data.devCode) {
+      document.getElementById('auth-error').style.display = 'block';
+      document.getElementById('auth-error').style.background = 'rgba(0,231,1,0.1)';
+      document.getElementById('auth-error').style.color = 'var(--accent)';
+      document.getElementById('auth-error').textContent = '⚙️ Dev mode code: ' + data.devCode;
+    }
+    switchAuth('reset');
+    toast('Reset code sent to ' + email, true);
+  } catch(e) { showAuthError(e.message); }
+  finally { btn.disabled = false; btn.textContent = '📧 Send Reset Code'; }
+}
+
+async function doResetPassword() {
+  const code = document.getElementById('reset-code').value.trim();
+  const newPass = document.getElementById('reset-new-pass').value;
+  const confirmPass = document.getElementById('reset-confirm-pass').value;
+  if (!code || code.length !== 6) return showAuthError('Enter the 6-digit reset code');
+  if (!newPass || newPass.length < 6) return showAuthError('Password must be at least 6 characters');
+  if (newPass !== confirmPass) return showAuthError('Passwords do not match');
+  const btn = document.getElementById('reset-btn');
+  btn.disabled = true; btn.textContent = '⏳ Resetting...';
+  try {
+    await apiCall('POST', '/auth/reset-password', { email: forgotEmail, code, newPassword: newPass }, false);
+    toast('✅ Password reset! Please log in.', true);
+    switchAuth('login');
+    closeAuth();
+    showAuth('login');
+  } catch(e) { showAuthError(e.message); }
+  finally { btn.disabled = false; btn.textContent = '🔒 Reset Password'; }
+}
+
+async function resendResetCode() {
+  if (!forgotEmail) return;
+  try {
+    await apiCall('POST', '/auth/forgot-password', { email: forgotEmail }, false);
+    toast('New code sent!', true);
+  } catch(e) { toast(e.message, false); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  CUSTOMER PROFILE PAGE
+// ══════════════════════════════════════════════════════════
+async function loadProfilePage() {
+  if (!authToken) {
+    showAuth('login');
+    return;
+  }
+  try {
+    const data = await apiCall('GET', '/user/full-profile');
+    const u = data.user || {};
+    const bi = u.bankInfo || {};
+    
+    // Display info
+    const setEl = (id, val) => { const el=document.getElementById(id); if(el) el.textContent = val || '—'; };
+    setEl('prof-playerid', u.playerId ? '#' + u.playerId : '—');
+    setEl('prof-name', ((u.firstName||'') + ' ' + (u.lastName||'')).trim() || '—');
+    setEl('prof-username', u.username);
+    setEl('prof-email', u.email);
+    setEl('prof-phone', u.phone || '—');
+    setEl('prof-joined', u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—');
+    setEl('prof-bank-name', bi.bankName);
+    setEl('prof-bank-acc', bi.accountNumber);
+    setEl('prof-bank-bsb', bi.bsb);
+    setEl('prof-bank-holder', bi.accountHolder || bi.bankHolder);
+
+    // Pre-fill edit fields
+    const setInput = (id, val) => { const el=document.getElementById(id); if(el) el.value = val || ''; };
+    setInput('edit-firstname', u.firstName);
+    setInput('edit-lastname', u.lastName);
+    setInput('edit-phone', u.phone ? u.phone.replace('+61','') : '');
+    setInput('edit-bank-name', bi.bankName);
+    setInput('edit-bank-acc', bi.accountNumber);
+    setInput('edit-bank-bsb', bi.bsb);
+    setInput('edit-bank-holder', bi.accountHolder || bi.bankHolder);
+  } catch(e) { toast('Could not load profile', false); }
+}
+
+async function saveProfile() {
+  const firstName = document.getElementById('edit-firstname').value.trim();
+  const lastName = document.getElementById('edit-lastname').value.trim();
+  const phoneRaw = document.getElementById('edit-phone').value.trim().replace(/\s/g,'');
+  
+  if (phoneRaw) {
+    const phoneClean = phoneRaw.replace(/[^0-9]/g,'');
+    if (!/^(04\d{8}|4\d{8})$/.test(phoneClean)) {
+      return toast('Please enter a valid Australian mobile (04XX XXX XXX)', false);
+    }
+  }
+
+  try {
+    const data = await apiCall('POST', '/user/update-profile', {
+      firstName, lastName,
+      phone: phoneRaw ? '+61' + (phoneRaw.startsWith('0') ? phoneRaw.slice(1) : phoneRaw) : undefined
+    });
+    if (data.error) return toast(data.error, false);
+    toast('✅ Profile updated!', true);
+    loadProfilePage();
+  } catch(e) { toast(e.message, false); }
+}
+
+async function saveBankProfile() {
+  const bankInfo = {
+    bankName: document.getElementById('edit-bank-name').value.trim(),
+    accountNumber: document.getElementById('edit-bank-acc').value.trim(),
+    bsb: document.getElementById('edit-bank-bsb').value.trim(),
+    accountHolder: document.getElementById('edit-bank-holder').value.trim(),
+  };
+  if (!bankInfo.bankName || !bankInfo.accountNumber || !bankInfo.bsb || !bankInfo.accountHolder) {
+    return toast('Please fill in all bank details', false);
+  }
+  try {
+    const data = await apiCall('POST', '/user/update-profile', { bankInfo });
+    if (data.error) return toast(data.error, false);
+    toast('🏦 Bank details updated!', true);
+    loadProfilePage();
+  } catch(e) { toast(e.message, false); }
+}
+
+async function changePassword() {
+  const current = document.getElementById('cp-current').value;
+  const newPass = document.getElementById('cp-new').value;
+  const confirm = document.getElementById('cp-confirm').value;
+  if (!current || !newPass || !confirm) return toast('Fill in all password fields', false);
+  if (newPass.length < 6) return toast('New password must be at least 6 characters', false);
+  if (newPass !== confirm) return toast('Passwords do not match', false);
+  try {
+    const data = await apiCall('POST', '/user/change-password', { currentPassword: current, newPassword: newPass });
+    if (data.error) return toast(data.error, false);
+    toast('✅ Password changed successfully!', true);
+    document.getElementById('cp-current').value = '';
+    document.getElementById('cp-new').value = '';
+    document.getElementById('cp-confirm').value = '';
+  } catch(e) { toast(e.message, false); }
 }
 
 </script>
